@@ -1,0 +1,12 @@
+
+network_params:
+  genesis_delay: 120
+  num_validator_keys_per_node: 250
+launch_additional_services: true
+additional_services:
+  - assertoor
+snooper_enabled: false
+disable_peer_scoring: true
+assertoor_params:
+  run_stability_check: false
+  run_block_proposal_check: false

@@ -1,0 +1,41 @@
+name: Run scheduled test
+
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: '0 6 * * *'
+
+concurrency:
+  group: "scheduled-test"
+  cancel-in-progress: false
+
+jobs:
+  get_tests:
+    name: "Load test configurations"
+    runs-on: ubuntu-latest
+    outputs:
+      test_configs: ${{ steps.tests.outputs.test_configs }}
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    - name: "Load test configurations from tests.yaml"
+      id: tests
+      shell: bash
+      run: |
+        tests_file="tests.yaml"
+
+        test_configs="$(cat $tests_file | yq -o json | jq -c '.tests')"
+        echo "test_configs<<EOF" >> $GITHUB_OUTPUT
+        echo "$test_configs" >> $GITHUB_OUTPUT
+        echo "$(echo "$test_configs" | jq)"
+        echo "EOF" >> $GITHUB_OUTPUT
+
+  run_tests:
+    needs: get_tests
+    uses: ./.github/workflows/_shared-run.yaml
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ${{ fromJson(needs.get_tests.outputs.test_configs) }}
+    with:
+      config: ${{ toJSON(matrix.config) }}

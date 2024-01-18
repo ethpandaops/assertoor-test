@@ -1,0 +1,79 @@
+
+on:
+  workflow_call:
+    inputs:
+      config:
+        type: string
+        description: "The test configuration in json format."
+        required: true
+
+jobs:
+  get_test:
+    name: "Parse test configuration"
+    runs-on: ubuntu-latest
+    outputs:
+      id: ${{ steps.test.outputs.id }}
+      name: ${{ steps.test.outputs.name }}
+      clients: ${{ steps.test.outputs.clients }}
+      kurtosis: ${{ steps.test.outputs.kurtosis }}
+      worker: ${{ steps.test.outputs.worker }}
+      backend: ${{ steps.test.outputs.backend }}
+      pairs: ${{ steps.test.outputs.pairs }}
+      assertoor_tests: ${{ steps.test.outputs.assertoor_tests }}
+    steps:
+    - name: "Parse test configuration"
+      id: test
+      shell: bash
+      run: |
+        testcfg=$(
+        cat <<"EOF"
+        ${{ inputs.config }}
+        EOF
+        )
+
+        id="$(echo "$testcfg" | jq -r .id)"
+        name="$(echo "$testcfg" | jq -r .name)"
+        clients="$(echo "$testcfg" | jq -r .clients)"
+        kurtosis="$(echo "$testcfg" | jq -r .kurtosis)"
+        worker="$(echo "$testcfg" | jq -r .worker)"
+        backend="$(echo "$testcfg" | jq -r .backend)"
+        pairs="$(echo "$testcfg" | jq -c .clientPairs)"
+        assertoor_tests="$(echo "$testcfg" | jq -c .assertoorTests)"
+
+        echo "ID: $id"
+        echo "id=$(echo "$id")" >> $GITHUB_OUTPUT
+        echo "Name: $name"
+        echo "name=$(echo "$name")" >> $GITHUB_OUTPUT
+        echo "Clients yaml: $clients"
+        echo "clients=$(echo "$clients")" >> $GITHUB_OUTPUT
+        echo "Kurtosis yaml: $kurtosis"
+        echo "kurtosis=$(echo "$kurtosis")" >> $GITHUB_OUTPUT
+        echo "Worker: $worker"
+        echo "worker=$(echo "$worker")" >> $GITHUB_OUTPUT
+        echo "Backend: $backend"
+        echo "backend=$(echo "$backend")" >> $GITHUB_OUTPUT
+        echo "Client Pairs:"
+        echo "$pairs" | yq -P
+        echo "pairs=$(echo "$pairs" | jq -c 'to_entries | map({pairs:.value, index:.key})')" >> $GITHUB_OUTPUT
+        echo "Assertoor Tests:"
+        echo "$assertoor_tests" | yq -P
+        echo "assertoor_tests=$(echo "$assertoor_tests")" >> $GITHUB_OUTPUT
+
+  run_with_docker:
+    needs: get_test
+    if: ${{ needs.get_test.outputs.backend == 'docker' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        pair: ${{ fromJson(needs.get_test.outputs.pairs) }}
+    name: "Run '${{ needs.get_test.outputs.name }}' in docker (#${{ matrix.pair.index }}: ${{ matrix.pair.pairs }})"
+    uses: ./.github/workflows/_shared-run-docker.yaml
+    with:
+      id: "${{ needs.get_test.outputs.id }}_${{ matrix.pair.index }}"
+      pairs: ${{ matrix.pair.pairs }}
+      worker: ${{ needs.get_test.outputs.worker }}
+      kurtosis: ${{ needs.get_test.outputs.kurtosis }}
+      clients: ${{ needs.get_test.outputs.clients }}
+      assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
+
+

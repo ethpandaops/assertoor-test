@@ -1,0 +1,26 @@
+
+consensus: # CL Clients
+  teku: 
+    image: "consensys/teku:latest"
+  prysm:
+    image: "gcr.io/prysmaticlabs/prysm/beacon-chain:stable,gcr.io/prysmaticlabs/prysm/validator:stable"
+  lighthouse: 
+    image: "sigp/lighthouse:latest"
+  nimbus:
+    image: "statusim/nimbus-eth2:amd64-latest"
+  lodestar:
+    image: "chainsafe/lodestar:latest"
+
+execution: # EL Clients
+  geth:
+    image: "ethereum/client-go:stable"
+  nethermind: 
+    image: "nethermind/nethermind:latest"
+    params: ["--TxPool.BlobsSupport", "InMemory"]
+  erigon:
+    image: "thorax/erigon:stable"
+  besu:
+    image: "hyperledger/besu:latest"
+  reth:
+    image: "ghcr.io/paradigmxyz/reth"
+

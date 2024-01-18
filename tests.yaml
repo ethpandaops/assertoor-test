@@ -1,0 +1,43 @@
+
+tests:
+
+# Test1
+- id: "test1"
+  name: "Test1"
+  clients: clients/latest.yaml
+  kurtosis: kurtosis-config/default.yaml
+  worker: ubuntu-latest
+  backend: docker
+  clientPairs:
+  - lighthouse-geth,prysm-reth,lodestar-besu
+  - lighthouse-geth,teku-erigon,nimbus-reth
+  - lighthouse-besu,prysm-reth,teku-geth
+  assertoorTests:
+  - assertoor-tests/stability-check.yaml
+  - assertoor-tests/block-proposal-check.yaml
+  - assertoor-tests/eoa-transactions-test.yaml
+  - assertoor-tests/all-opcodes-transaction-test.yaml
+  - assertoor-tests/validator-withdrawal-test.yaml
+  - assertoor-tests/validator-exit-test.yaml
+  - assertoor-tests/validator-slashing-test.yaml
+
+
+- id: "test2"
+  name: "Deneb Test"
+  clients: clients/deneb.yaml
+  kurtosis: kurtosis-config/deneb.yaml
+  worker: ubuntu-latest
+  backend: docker
+  clientPairs:
+  - lighthouse-geth,prysm-reth,lodestar-besu
+  - lighthouse-geth,teku-erigon,nimbus-reth
+  - lighthouse-besu,prysm-reth,teku-geth
+  assertoorTests:
+  - assertoor-tests/stability-check.yaml
+  - assertoor-tests/block-proposal-check.yaml
+  - assertoor-tests/eoa-transactions-test.yaml
+  - assertoor-tests/blob-transactions-test.yaml
+  - assertoor-tests/all-opcodes-transaction-test.yaml
+  - assertoor-tests/validator-withdrawal-test.yaml
+  - assertoor-tests/validator-exit-test.yaml
+  - assertoor-tests/validator-slashing-test.yaml
