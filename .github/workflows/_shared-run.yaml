@@ -6,6 +6,10 @@ on:
         type: string
         description: "The test configuration in json format."
         required: true
+    secrets:
+      KUBECONFIG:
+        description: 'Kubernetes config'
+        required: false
 
 jobs:
   get_test:
@@ -37,6 +41,8 @@ jobs:
         kurtosis="$(echo "$testcfg" | jq -r .kurtosis)"
         worker="$(echo "$testcfg" | jq -r .worker)"
         backend="$(echo "$testcfg" | jq -r .backend)"
+        kubernetes_cluster="$(echo "$testcfg" | jq -r .kubernetes.cluster)"
+        kubernetes_storageclass="$(echo "$testcfg" | jq -r .kubernetes.storageClass)"
         pairs="$(echo "$testcfg" | jq -c .clientPairs)"
         assertoor_tests="$(echo "$testcfg" | jq -c .assertoorTests)"
 
@@ -52,6 +58,15 @@ jobs:
         echo "worker=$(echo "$worker")" >> $GITHUB_OUTPUT
         echo "Backend: $backend"
         echo "backend=$(echo "$backend")" >> $GITHUB_OUTPUT
+        if [ "$backend" == "kubernetes" ]; then
+          echo "Kubernetes Cluster: $kubernetes_cluster"
+          echo "kubernetes_cluster=$(echo "$kubernetes_cluster")" >> $GITHUB_OUTPUT
+          echo "Kubernetes Storage Class: $kubernetes_storageclass"
+          echo "kubernetes_storageclass=$(echo "$kubernetes_storageclass")" >> $GITHUB_OUTPUT
+        else
+          echo "kubernetes_cluster=" >> $GITHUB_OUTPUT
+          echo "kubernetes_storageclass=" >> $GITHUB_OUTPUT
+        fi
         echo "Client Pairs:"
         echo "$pairs" | yq -P
         echo "pairs=$(echo "$pairs" | jq -c 'to_entries | map({pairs:.value, index:.key})')" >> $GITHUB_OUTPUT
@@ -75,5 +90,26 @@ jobs:
       kurtosis: ${{ needs.get_test.outputs.kurtosis }}
       clients: ${{ needs.get_test.outputs.clients }}
       assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
+  
+  run_with_kubernetes:
+    needs: get_test
+    if: ${{ needs.get_test.outputs.backend == 'kubernetes' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        pair: ${{ fromJson(needs.get_test.outputs.pairs) }}
+    name: "Run '${{ needs.get_test.outputs.name }}' in kubernetes (#${{ matrix.pair.index }}: ${{ matrix.pair.pairs }})"
+    uses: ./.github/workflows/_shared-run-kubernetes.yaml
+    with:
+      id: "${{ needs.get_test.outputs.id }}_${{ matrix.pair.index }}"
+      pairs: ${{ matrix.pair.pairs }}
+      worker: ${{ needs.get_test.outputs.worker }}
+      kurtosis: ${{ needs.get_test.outputs.kurtosis }}
+      kubeCluster: ${{ needs.get_test.outputs.kubernetes_cluster }}
+      kubeStorageClass: ${{ needs.get_test.outputs.kubernetes_storageclass }}
+      clients: ${{ needs.get_test.outputs.clients }}
+      assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
 

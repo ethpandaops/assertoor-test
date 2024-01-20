@@ -21,6 +21,27 @@ tests:
   - assertoor-tests/validator-exit-test.yaml
   - assertoor-tests/validator-slashing-test.yaml
 
+# kubetest
+- id: "kubetest"
+  name: "Kubernetes Test"
+  clients: clients/latest.yaml
+  kurtosis: kurtosis-config/default.yaml
+  worker: ubuntu-latest
+  backend: kubernetes
+  kubernetes:
+    cluster: services
+    storageClass: do-block-storage
+  clientPairs:
+  - lighthouse-geth,prysm-reth,lodestar-besu
+  assertoorTests:
+  - assertoor-tests/stability-check.yaml
+  - assertoor-tests/block-proposal-check.yaml
+  - assertoor-tests/eoa-transactions-test.yaml
+  - assertoor-tests/all-opcodes-transaction-test.yaml
+  - assertoor-tests/validator-withdrawal-test.yaml
+  - assertoor-tests/validator-exit-test.yaml
+  - assertoor-tests/validator-slashing-test.yaml
+
 
 - id: "test2"
   name: "Deneb Test"
@@ -41,3 +62,4 @@ tests:
   - assertoor-tests/validator-withdrawal-test.yaml
   - assertoor-tests/validator-exit-test.yaml
   - assertoor-tests/validator-slashing-test.yaml
+
