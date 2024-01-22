@@ -177,6 +177,8 @@ jobs:
         echo "      kubernetes-cluster-name: \"${{ inputs.kubeCluster }}\"" >> $kurtosis_config
         echo "      storage-class: \"${{ inputs.kubeStorageClass }}\"" >> $kurtosis_config
         echo "      enclave-size-in-megabytes: 200" >> $kurtosis_config
+
+        echo $kurtosis_config
     - name: Set Kurtosis cluster
       shell: bash
       run: |
