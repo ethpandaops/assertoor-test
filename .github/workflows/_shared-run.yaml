@@ -7,10 +7,10 @@ on:
         description: "The test configuration in json format."
         required: true
     secrets:
-      KUBECONFIG:
-        description: 'Kubernetes config'
-        required: false
-
+      RANCHER_TOKEN:
+        description: "The rancher token to login to the rancher server."
+      RANCHER_URL:
+        description: "The rancher url to login to the rancher server."
 jobs:
   get_test:
     name: "Parse test configuration"
@@ -74,6 +74,37 @@ jobs:
         echo "$assertoor_tests" | yq -P
         echo "assertoor_tests=$(echo "$assertoor_tests")" >> $GITHUB_OUTPUT
 
+  generate_kubeconfig:
+    name: "Generate kubeconfig"
+    runs-on: ubuntu-latest
+    if: ${{ needs.get_test.outputs.backend == 'kubernetes' }}
+    steps:
+    - name: "Install rancher CLI"
+      shell: bash
+      run: |
+        curl -L https://github.com/rancher/cli/releases/download/v2.8.0/rancher-darwin-amd64-v2.8.0.tar.gz | tar xvz
+        mv ./rancher-v2.8.0/rancher /usr/local/bin/rancher
+    - name: Login to rancher
+      shell: bash
+      run: |
+        rancher login --token "${{ secrets.RANCHER_TOKEN }}" "${{ secrets.RANCHER_URL }}"
+    - name: Login to kubernetes cluster
+      shell: bash
+      run: |
+        rancher kubectl config use-context "$${{ needs.get_test.outputs.kubernetes_cluster }}"
+    - name: Check kubernetes cluster
+      shell: bash
+      run: |
+        set -e
+        rancher kubectl get pods > /dev/null
+    - name: Generate kubeconfig
+      id: kubeconfig
+      shell: bash
+      run: |
+        rancher kubectl config view --raw > kubeconfig
+        echo "$KUBECONFIG" > kubeconfig
+        echo "::set-output name=kubeconfig::$(cat kubeconfig)"
+
   run_with_docker:
     needs: get_test
     if: ${{ needs.get_test.outputs.backend == 'docker' }}
@@ -92,7 +123,9 @@ jobs:
       assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
   
   run_with_kubernetes:
-    needs: get_test
+    needs:
+      - get_test
+      - generate_kubeconfig
     if: ${{ needs.get_test.outputs.backend == 'kubernetes' }}
     strategy:
       fail-fast: false
@@ -110,6 +143,6 @@ jobs:
       clients: ${{ needs.get_test.outputs.clients }}
       assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
     secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+      KUBECONFIG: ${{ needs.generate_kubeconfig.outputs.kubeconfig }}
 
 
