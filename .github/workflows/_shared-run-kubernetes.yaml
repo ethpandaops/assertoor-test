@@ -133,23 +133,13 @@ jobs:
         echo ""
         cat ./temp/test-network.yaml
 
-    - name: Install kubectl
+    - uses: tale/kubectl-action@v1
+      with:
+        base64-kube-config: ${{ secrets.KUBECONFIG }}
+    - name: Check Kubernetes engine
       shell: bash
       run: |
-        export PATH=$HOME/bin:$PATH;
-        curl -LO "https://dl.k8s.io/release/v1.22.4/bin/linux/amd64/kubectl" -o kubectl;
-        mv kubectl /usr/local/bin/kubectl;
-        chmod +x /usr/local/bin/kubectl;
-    - name: Initialize Kubernetes engine
-      shell: bash
-      run: |
-        export PATH=$HOME/bin:$PATH;
-        mkdir -p $HOME/.kube/
-        echo "Initializing kubernetes engine"
-        echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
-        export KUBECONFIG=$HOME/.kube/config
-        chmod 600 $HOME/.kube/config
-        kubectl config set-context ${{ inputs.kubeCluster }}
+        set -e
         kubectl get nodes > /dev/null
     - name: Setup Kurtosis
       shell: bash

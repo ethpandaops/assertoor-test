@@ -96,6 +96,7 @@ jobs:
       shell: bash
       run: |
         rancher kubectl config use-context "${{ needs.get_test.outputs.kubernetes_cluster }}"
+        rancher kubectl config 
     - name: Check kubernetes cluster
       shell: bash
       run: |
@@ -105,7 +106,7 @@ jobs:
       id: kubeconfig
       shell: bash
       run: |
-        rancher kubectl config view --raw > kubeconfig
+        rancher kubectl config view --raw | base64 > kubeconfig
         echo "$KUBECONFIG" > kubeconfig
         echo "::set-output name=kubeconfig::$(cat kubeconfig)"
 
