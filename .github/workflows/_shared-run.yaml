@@ -93,7 +93,7 @@ jobs:
     - name: Login to kubernetes cluster
       shell: bash
       run: |
-        rancher kubectl config use-context "$${{ needs.get_test.outputs.kubernetes_cluster }}"
+        rancher kubectl config use-context "${{ needs.get_test.outputs.kubernetes_cluster }}"
     - name: Check kubernetes cluster
       shell: bash
       run: |
