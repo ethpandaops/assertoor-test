@@ -150,10 +150,6 @@ jobs:
         export KUBECONFIG=$HOME/.kube/config
         chmod 600 $HOME/.kube/config
         kubectl config set-context ${{ inputs.kubeCluster }}
-    - name: Check Kubernetes engine
-      shell: bash
-      run: |
-        set -e
         kubectl get nodes > /dev/null
     - name: Setup Kurtosis
       shell: bash
