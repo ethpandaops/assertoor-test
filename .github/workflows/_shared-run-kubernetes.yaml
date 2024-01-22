@@ -141,6 +141,7 @@ jobs:
       run: |
         set -e
         kubectl get nodes > /dev/null
+        echo "Kubernetes engine is ready!"
     - name: Setup Kurtosis
       shell: bash
       run: |
@@ -164,7 +165,7 @@ jobs:
         echo "      storage-class: \"${{ inputs.kubeStorageClass }}\"" >> $kurtosis_config
         echo "      enclave-size-in-megabytes: 200" >> $kurtosis_config
 
-        echo $kurtosis_config
+        cat $kurtosis_config
     - name: Set Kurtosis cluster
       shell: bash
       run: |
