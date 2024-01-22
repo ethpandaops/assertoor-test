@@ -95,13 +95,7 @@ jobs:
     - name: Login to kubernetes cluster
       shell: bash
       run: |
-        rancher kubectl config use-context "${{ needs.get_test.outputs.kubernetes_cluster }}"
-        rancher kubectl config 
-    - name: Check kubernetes cluster
-      shell: bash
-      run: |
-        set -e
-        rancher kubectl get pods > /dev/null
+        rancher kubectl config set-context "${{ needs.get_test.outputs.kubernetes_cluster }}"
     - name: Generate kubeconfig
       id: kubeconfig
       shell: bash
