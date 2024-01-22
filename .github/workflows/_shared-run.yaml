@@ -84,7 +84,7 @@ jobs:
     - name: "Install rancher CLI"
       shell: bash
       run: |
-        curl -L https://github.com/rancher/cli/releases/download/v2.8.0/rancher-darwin-amd64-v2.8.0.tar.gz | tar xvz
+        curl -L https://github.com/rancher/cli/releases/download/v2.8.0/rancher-linux-amd64-v2.8.0.tar.gz | tar xvz
         mv ./rancher-v2.8.0/rancher /usr/local/bin/rancher
     - name: Login to rancher
       shell: bash
