@@ -138,8 +138,8 @@ jobs:
       run: |
         export PATH=$HOME/bin:$PATH;
         curl -LO "https://dl.k8s.io/release/v1.22.4/bin/linux/amd64/kubectl" -o kubectl;
-        mv kubectl $HOME/bin/kubectl;
-        chmod +x $HOME/bin/kubectl;
+        mv kubectl /usr/local/bin/kubectl;
+        chmod +x /usr/local/bin/kubectl;
     - name: Initialize Kubernetes engine
       shell: bash
       run: |
@@ -149,7 +149,6 @@ jobs:
         echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
         export KUBECONFIG=$HOME/.kube/config
         chmod 600 $HOME/.kube/config
-        kubectl config set-context --current
     - name: Setup Kurtosis
       shell: bash
       run: |
