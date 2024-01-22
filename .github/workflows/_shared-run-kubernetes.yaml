@@ -149,7 +149,7 @@ jobs:
         echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
         export KUBECONFIG=$HOME/.kube/config
         chmod 600 $HOME/.kube/config
-        kubectl config set-context --current ${{ inputs.kubeCluster }}
+        kubectl config set-context --current
     - name: Check Kubernetes engine
       shell: bash
       run: |
