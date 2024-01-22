@@ -170,19 +170,23 @@ jobs:
       shell: bash
       run: |
         kurtosis cluster set cloud
-        kurtosis engine start
+        kurtosis gateway &
+
+        kurtosis engine restart || true
         kurtosis engine status
         kurtosis enclave ls
 
     - name: Run Kurtosis
       shell: bash
       run: |
+        kurtosis gateway &
         kurtosis run github.com/kurtosis-tech/ethereum-package --enclave assertoor-${{ inputs.id }} --args-file ./temp/test-network.yaml
 
     - name: Get Service URLs
       shell: bash
       id: services
       run: |
+        kurtosis gateway &
         enclave_dump=$(kurtosis enclave inspect assertoor-${{ inputs.id }})
 
         assertoor_url=$(echo "$enclave_dump" | grep assertoor | grep http | sed 's/.*\(http:\/\/[0-9.:]\+\).*/\1/')
@@ -206,7 +210,6 @@ jobs:
 
         # run kurtosis gateway
         kurtosis gateway &
-        sleep 5
 
         # helper to fetch task status for specific test id
         get_tasks_status() {
