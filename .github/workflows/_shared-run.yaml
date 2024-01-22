@@ -106,9 +106,8 @@ jobs:
       id: kubeconfig
       shell: bash
       run: |
-        rancher kubectl config view --raw | base64 > kubeconfig
-        echo "$KUBECONFIG" > kubeconfig
-        echo "::set-output name=kubeconfig::$(cat kubeconfig)"
+        rancher kubectl config view --raw > kubeconfig
+        echo "::set-output name=kubeconfig::$(cat kubeconfig | base64 -w 0)"
 
   run_with_docker:
     needs: get_test
