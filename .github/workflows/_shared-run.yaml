@@ -24,6 +24,8 @@ jobs:
       backend: ${{ steps.test.outputs.backend }}
       pairs: ${{ steps.test.outputs.pairs }}
       assertoor_tests: ${{ steps.test.outputs.assertoor_tests }}
+      kubernetes_cluster: ${{ steps.test.outputs.kubernetes_cluster }}
+      kubernetes_storageclass: ${{ steps.test.outputs.kubernetes_storageclass }}
     steps:
     - name: "Parse test configuration"
       id: test
