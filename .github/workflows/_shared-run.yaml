@@ -75,6 +75,8 @@ jobs:
         echo "assertoor_tests=$(echo "$assertoor_tests")" >> $GITHUB_OUTPUT
 
   generate_kubeconfig:
+    needs:
+      - get_test
     name: "Generate kubeconfig"
     runs-on: ubuntu-latest
     if: ${{ needs.get_test.outputs.backend == 'kubernetes' }}
