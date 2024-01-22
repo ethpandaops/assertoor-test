@@ -115,7 +115,7 @@ jobs:
     name: "Run '${{ needs.get_test.outputs.name }}' in docker (#${{ matrix.pair.index }}: ${{ matrix.pair.pairs }})"
     uses: ./.github/workflows/_shared-run-docker.yaml
     with:
-      id: "${{ needs.get_test.outputs.id }}_${{ matrix.pair.index }}"
+      id: "${{ needs.get_test.outputs.id }}-${{ matrix.pair.index }}"
       pairs: ${{ matrix.pair.pairs }}
       worker: ${{ needs.get_test.outputs.worker }}
       kurtosis: ${{ needs.get_test.outputs.kurtosis }}
@@ -134,7 +134,7 @@ jobs:
     name: "Run '${{ needs.get_test.outputs.name }}' in kubernetes (#${{ matrix.pair.index }}: ${{ matrix.pair.pairs }})"
     uses: ./.github/workflows/_shared-run-kubernetes.yaml
     with:
-      id: "${{ needs.get_test.outputs.id }}_${{ matrix.pair.index }}"
+      id: "${{ needs.get_test.outputs.id }}-${{ matrix.pair.index }}"
       pairs: ${{ matrix.pair.pairs }}
       worker: ${{ needs.get_test.outputs.worker }}
       kurtosis: ${{ needs.get_test.outputs.kurtosis }}
