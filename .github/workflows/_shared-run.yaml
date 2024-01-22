@@ -82,6 +82,8 @@ jobs:
     name: "Generate kubeconfig"
     runs-on: ubuntu-latest
     if: ${{ needs.get_test.outputs.backend == 'kubernetes' }}
+    outputs:
+      kubeconfig: ${{ steps.kubeconfig.outputs.kubeconfig }}
     steps:
     - name: "Install rancher CLI"
       shell: bash
