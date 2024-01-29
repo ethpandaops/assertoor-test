@@ -3,6 +3,7 @@ tests:
 
 # Test1
 - id: "test1"
+  schedule: true
   name: "Test1"
   clients: clients/latest.yaml
   kurtosis: kurtosis-config/default.yaml
@@ -16,13 +17,14 @@ tests:
   - assertoor-tests/stability-check.yaml
   - assertoor-tests/block-proposal-check.yaml
   - assertoor-tests/eoa-transactions-test.yaml
-  - assertoor-tests/all-opcodes-transaction-test.yaml
+  - assertoor-tests/all-opcodes-test.yaml
   - assertoor-tests/validator-withdrawal-test.yaml
   - assertoor-tests/validator-exit-test.yaml
   - assertoor-tests/validator-slashing-test.yaml
 
 # kubetest
 - id: "kubetest"
+  schedule: false
   name: "Kubernetes Test"
   clients: clients/latest.yaml
   kurtosis: kurtosis-config/default.yaml
@@ -37,13 +39,14 @@ tests:
   - assertoor-tests/stability-check.yaml
   - assertoor-tests/block-proposal-check.yaml
   - assertoor-tests/eoa-transactions-test.yaml
-  - assertoor-tests/all-opcodes-transaction-test.yaml
+  - assertoor-tests/all-opcodes-test.yaml
   - assertoor-tests/validator-withdrawal-test.yaml
   - assertoor-tests/validator-exit-test.yaml
   - assertoor-tests/validator-slashing-test.yaml
 
 
 - id: "test2"
+  schedule: true
   name: "Deneb Test"
   clients: clients/deneb.yaml
   kurtosis: kurtosis-config/deneb.yaml
@@ -58,7 +61,8 @@ tests:
   - assertoor-tests/block-proposal-check.yaml
   - assertoor-tests/eoa-transactions-test.yaml
   - assertoor-tests/blob-transactions-test.yaml
-  - assertoor-tests/all-opcodes-transaction-test.yaml
+  - assertoor-tests/all-opcodes-test.yaml
+  - assertoor-tests/dencun-opcodes-test.yaml
   - assertoor-tests/validator-withdrawal-test.yaml
   - assertoor-tests/validator-exit-test.yaml
   - assertoor-tests/validator-slashing-test.yaml

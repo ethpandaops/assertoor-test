@@ -31,7 +31,9 @@ jobs:
 
         test_configs="$(cat $tests_file | yq -o json | jq -c '.tests')"
 
-        if ! [ -z "$override_tests" ]; then
+        if [ -z "$override_tests" ]; then
+          test_configs="$(echo "$test_configs" | jq -c "map(select(.schedule == true))")"
+        else
           # filter by tests
           filter_str=""
 
@@ -42,7 +44,7 @@ jobs:
             filter_str="$filter_str .id == \"$test\""
           done <<< $(echo "$override_tests" | tr "," "\n")
 
-          test_configs="$(echo "$test_configs" | jq -c ". | map(select($filter_str))")"
+          test_configs="$(echo "$test_configs" | jq -c "map(select($filter_str))")"
         fi
 
         if ! [ -z "$override_pairs" ]; then

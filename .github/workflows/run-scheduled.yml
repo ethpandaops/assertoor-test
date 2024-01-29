@@ -24,7 +24,7 @@ jobs:
       run: |
         tests_file="tests.yaml"
 
-        test_configs="$(cat $tests_file | yq -o json | jq -c '.tests')"
+        test_configs="$(cat $tests_file | yq -o json | jq '.tests' | jq -c 'map(select(.schedule == true))')"
         echo "test_configs<<EOF" >> $GITHUB_OUTPUT
         echo "$test_configs" >> $GITHUB_OUTPUT
         echo "$(echo "$test_configs" | jq)"
