@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   get_tests:
-    name: "Load test configurations"
+    name: "Load Tests"
     runs-on: ubuntu-latest
     outputs:
       test_configs: ${{ steps.tests.outputs.test_configs }}
@@ -33,7 +33,7 @@ jobs:
   run_tests:
     needs: get_tests
     uses: ./.github/workflows/_shared-run.yaml
-    name: "Run ${{ matrix.config.id }}: ${{ matrix.config.name }}"
+    name: "${{ matrix.config.name }}"
     strategy:
       fail-fast: false
       matrix:

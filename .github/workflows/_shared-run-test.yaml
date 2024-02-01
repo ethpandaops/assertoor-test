@@ -15,6 +15,10 @@ on:
         type: string
         description: "The worker to use (default: ubuntu-latest)."
         default: "ubuntu-latest"
+      backend:
+        type: string
+        description: "The backend type to use (docker, kubernetes)."
+        default: "docker"
       kubeCluster:
         type: string
         description: "The name of the cluster to run the test on."
@@ -133,15 +137,6 @@ jobs:
         echo ""
         cat ./temp/test-network.yaml
 
-    - uses: tale/kubectl-action@v1
-      with:
-        base64-kube-config: ${{ secrets.KUBECONFIG }}
-    - name: Check Kubernetes engine
-      shell: bash
-      run: |
-        set -e
-        kubectl get nodes > /dev/null
-        echo "Kubernetes engine is ready!"
     - name: Setup Kurtosis
       shell: bash
       run: |
@@ -149,7 +144,21 @@ jobs:
         sudo apt update
         sudo apt install kurtosis-cli
         kurtosis analytics disable
-    - name: Set Kurtosis config
+
+    - name: Setup kubectl
+      if: ${{ inputs.backend == 'kubernetes' }}
+      uses: tale/kubectl-action@v1
+      with:
+        base64-kube-config: ${{ secrets.KUBECONFIG }}
+    - name: Check Kubernetes engine
+      if: ${{ inputs.backend == 'kubernetes' }}
+      shell: bash
+      run: |
+        set -e
+        kubectl get nodes > /dev/null
+        echo "Kubernetes engine is ready!"
+    - name: Configure kurtosis to use kubernetes backend
+      if: ${{ inputs.backend == 'kubernetes' }}
       shell: bash
       run: |
         kurtosis_config=$(kurtosis config path)
@@ -166,9 +175,7 @@ jobs:
         echo "      enclave-size-in-megabytes: 200" >> $kurtosis_config
 
         cat $kurtosis_config
-    - name: Set Kurtosis cluster
-      shell: bash
-      run: |
+
         kurtosis cluster set cloud
         kurtosis gateway &
 
@@ -178,15 +185,14 @@ jobs:
 
     - name: Run Kurtosis
       shell: bash
-      run: |
-        kurtosis gateway &
-        kurtosis run github.com/kurtosis-tech/ethereum-package --enclave assertoor-${{ inputs.id }} --args-file ./temp/test-network.yaml
-
-    - name: Get Service URLs
-      shell: bash
       id: services
       run: |
-        kurtosis gateway &
+        if [ "${{ inputs.backend }}" == "kubernetes" ]; then
+          kurtosis gateway &
+        fi
+
+        kurtosis run github.com/kurtosis-tech/ethereum-package --enclave assertoor-${{ inputs.id }} --args-file ./temp/test-network.yaml
+
         enclave_dump=$(kurtosis enclave inspect assertoor-${{ inputs.id }})
 
         assertoor_url=$(echo "$enclave_dump" | grep assertoor | grep http | sed 's/.*\(http:\/\/[0-9.:]\+\).*/\1/')
@@ -205,11 +211,17 @@ jobs:
         RED='\033[0;31m'
         NC='\033[0m'
 
-        # print assertor logs
-        kubectl -n kt-assertoor-${{ inputs.id }} logs -f assertoor &
+        if [ "${{ inputs.backend }}" == "kubernetes" ]; then
+          # print assertor logs
+          kubectl -n kt-assertoor-${{ inputs.id }} logs -f assertoor &
 
-        # run kurtosis gateway
-        kurtosis gateway &
+          # run kurtosis gateway
+          kurtosis gateway &
+        else
+          # print assertor logs
+          assertoor_container=$(docker container list | grep assertoor | sed 's/^\([^ ]\+\) .*$/\1/')
+          docker logs -f $assertoor_container &
+        fi
 
         # helper to fetch task status for specific test id
         get_tasks_status() {
@@ -320,7 +332,7 @@ jobs:
           echo "failed_test_status=" >> $GITHUB_OUTPUT
         fi
 
-    - name: Generate dump of kurtosis enclave
+    - name: Generate dump and remove kurtosis enclave
       shell: bash
       run: |
         mkdir -p ./temp/dump

@@ -13,22 +13,24 @@ on:
         description: "The rancher url to login to the rancher server."
 jobs:
   get_test:
-    name: "Parse test configuration"
+    name: "Prepare Test"
     runs-on: ubuntu-latest
     outputs:
-      id: ${{ steps.test.outputs.id }}
-      name: ${{ steps.test.outputs.name }}
-      clients: ${{ steps.test.outputs.clients }}
-      kurtosis: ${{ steps.test.outputs.kurtosis }}
-      worker: ${{ steps.test.outputs.worker }}
-      backend: ${{ steps.test.outputs.backend }}
-      pairs: ${{ steps.test.outputs.pairs }}
-      assertoor_tests: ${{ steps.test.outputs.assertoor_tests }}
-      kubernetes_cluster: ${{ steps.test.outputs.kubernetes_cluster }}
-      kubernetes_storageclass: ${{ steps.test.outputs.kubernetes_storageclass }}
+      id: ${{ steps.config.outputs.id }}
+      name: ${{ steps.config.outputs.name }}
+      clients: ${{ steps.config.outputs.clients }}
+      kurtosis: ${{ steps.config.outputs.kurtosis }}
+      worker: ${{ steps.config.outputs.worker }}
+      backend: ${{ steps.config.outputs.backend }}
+      pairs: ${{ steps.config.outputs.pairs }}
+      pairsidx: ${{ steps.config.outputs.pairsidx }}
+      assertoor_tests: ${{ steps.config.outputs.assertoor_tests }}
+      kubernetes_cluster: ${{ steps.config.outputs.kubernetes_cluster }}
+      kubernetes_storageclass: ${{ steps.config.outputs.kubernetes_storageclass }}
+      kubeconfig: ${{ steps.kubeconfig.outputs.kubeconfig }}
     steps:
     - name: "Parse test configuration"
-      id: test
+      id: config
       shell: bash
       run: |
         testcfg=$(
@@ -72,77 +74,54 @@ jobs:
         echo "Client Pairs:"
         echo "$pairs" | yq -P
         echo "pairs=$(echo "$pairs" | jq -c 'to_entries | map({pairs:.value, index:.key})')" >> $GITHUB_OUTPUT
+        echo "pairsidx=$(echo "$pairs" | jq -c 'to_entries | map(.key)')" >> $GITHUB_OUTPUT
         echo "Assertoor Tests:"
         echo "$assertoor_tests" | yq -P
         echo "assertoor_tests=$(echo "$assertoor_tests")" >> $GITHUB_OUTPUT
 
-  generate_kubeconfig:
-    needs:
-      - get_test
-    name: "Generate kubeconfig"
-    runs-on: ubuntu-latest
-    if: ${{ needs.get_test.outputs.backend == 'kubernetes' }}
-    outputs:
-      kubeconfig: ${{ steps.kubeconfig.outputs.kubeconfig }}
-    steps:
+    # Generate kubeconfig for kubernetes backend
     - name: "Install rancher CLI"
+      if: ${{ steps.config.outputs.backend == 'kubernetes' }}
       shell: bash
       run: |
         curl -L https://github.com/rancher/cli/releases/download/v2.8.0/rancher-linux-amd64-v2.8.0.tar.gz | tar xvz
         mv ./rancher-v2.8.0/rancher /usr/local/bin/rancher
     - name: Login to rancher
+      if: ${{ steps.config.outputs.backend == 'kubernetes' }}
       shell: bash
       run: |
         rancher login --token "${{ secrets.RANCHER_TOKEN }}" "${{ secrets.RANCHER_URL }}"
     - name: Login to kubernetes cluster
+      if: ${{ steps.config.outputs.backend == 'kubernetes' }}
       shell: bash
       run: |
-        rancher kubectl config set-context "${{ needs.get_test.outputs.kubernetes_cluster }}"
+        rancher kubectl config set-context "${{ steps.config.outputs.kubernetes_cluster }}"
     - name: Generate kubeconfig
+      if: ${{ steps.config.outputs.backend == 'kubernetes' }}
       id: kubeconfig
       shell: bash
       run: |
         rancher kubectl config view --raw > kubeconfig
-        echo "::set-output name=kubeconfig::$(cat kubeconfig | base64 -w 0)"
-
-  run_with_docker:
+        echo "kubeconfig=$(cat kubeconfig | base64 -w 0)" >> $GITHUB_OUTPUT
+    
+  run_test:
     needs: get_test
-    if: ${{ needs.get_test.outputs.backend == 'docker' }}
     strategy:
       fail-fast: false
       matrix:
-        pair: ${{ fromJson(needs.get_test.outputs.pairs) }}
-    name: "with docker"
-    uses: ./.github/workflows/_shared-run-docker.yaml
+        index: ${{ fromJson(needs.get_test.outputs.pairsidx) }}
+        include: ${{ fromJson(needs.get_test.outputs.pairs) }}
+    name: "run"
+    uses: ./.github/workflows/_shared-run-test.yaml
     with:
-      id: "${{ needs.get_test.outputs.id }}-${{ matrix.pair.index }}"
-      pairs: ${{ matrix.pair.pairs }}
+      id: "${{ needs.get_test.outputs.id }}-${{ matrix.index }}"
+      pairs: ${{ matrix.pairs }}
       worker: ${{ needs.get_test.outputs.worker }}
       kurtosis: ${{ needs.get_test.outputs.kurtosis }}
-      clients: ${{ needs.get_test.outputs.clients }}
-      assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
-  
-  run_with_kubernetes:
-    needs:
-      - get_test
-      - generate_kubeconfig
-    if: ${{ needs.get_test.outputs.backend == 'kubernetes' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        pair: ${{ fromJson(needs.get_test.outputs.pairs) }}
-    name: "with kubernetes"
-    uses: ./.github/workflows/_shared-run-kubernetes.yaml
-    with:
-      id: "${{ needs.get_test.outputs.id }}-${{ matrix.pair.index }}"
-      pairs: ${{ matrix.pair.pairs }}
-      worker: ${{ needs.get_test.outputs.worker }}
-      kurtosis: ${{ needs.get_test.outputs.kurtosis }}
+      backend: ${{ needs.get_test.outputs.backend }}
       kubeCluster: ${{ needs.get_test.outputs.kubernetes_cluster }}
       kubeStorageClass: ${{ needs.get_test.outputs.kubernetes_storageclass }}
       clients: ${{ needs.get_test.outputs.clients }}
       assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
     secrets:
-      KUBECONFIG: ${{ needs.generate_kubeconfig.outputs.kubeconfig }}
-
-
+      KUBECONFIG: ${{ needs.get_test.outputs.kubeconfig }}
