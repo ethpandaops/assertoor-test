@@ -30,7 +30,7 @@ on:
 
 jobs:
   run_test:
-    name: "Run ${{ inputs.id }} with '${{ inputs.pairs }}'"
+    name: "Run ${{ inputs.id }}"
     runs-on: ${{ inputs.worker }}
     steps:
     - name: Checkout Repository

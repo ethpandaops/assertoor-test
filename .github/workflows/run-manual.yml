@@ -59,6 +59,7 @@ jobs:
   run_tests:
     needs: get_tests
     uses: ./.github/workflows/_shared-run.yaml
+    name: "Run ${{ matrix.config.id }}: ${{ matrix.config.name }}"
     strategy:
       fail-fast: false
       matrix:
