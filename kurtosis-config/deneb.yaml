@@ -7,7 +7,7 @@ network_params:
 launch_additional_services: true
 additional_services:
   - assertoor
-snooper_enabled: false
+snooper_enabled: true
 disable_peer_scoring: true
 assertoor_params:
   run_stability_check: false
