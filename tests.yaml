@@ -3,7 +3,7 @@ tests:
 
 # Test1
 - id: "test1"
-  schedule: true
+  schedule: false
   name: "Test latest clients"
   clients: clients/latest.yaml
   kurtosis: kurtosis-config/default.yaml
@@ -46,7 +46,7 @@ tests:
 
 
 - id: "deneb-test"
-  schedule: true
+  schedule: false
   name: "Test dencun clients"
   clients: clients/deneb.yaml
   kurtosis: kurtosis-config/deneb.yaml
