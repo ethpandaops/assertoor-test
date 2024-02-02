@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - run_tests
-    if: ${{ always() }}
+    if: ${{ failure() }}
     steps:
       - name: Notify
         uses: nobrayner/discord-webhook@v1
