@@ -83,6 +83,7 @@ tests:
   - assertoor-tests/eoa-transactions-test.yaml
   - assertoor-tests/all-opcodes-test.yaml
   - assertoor-tests/validator-withdrawal-test.yaml
-  - assertoor-tests/validator-exit-test.yaml
+  # voluntary exit test does not work because according to EIP7044 assertoor signs exits with the capella signing domain
+  #- assertoor-tests/validator-exit-test.yaml
   - assertoor-tests/validator-slashing-test.yaml
 
