@@ -69,7 +69,7 @@ tests:
 
 
 - id: "verkle-test"
-  schedule: false
+  schedule: true
   name: "Test verkle clients"
   clients: clients/verkle.yaml
   kurtosis: kurtosis-config/verkle-gen.yaml
