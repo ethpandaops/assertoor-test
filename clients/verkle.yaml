@@ -7,5 +7,5 @@ consensus: # CL Clients
 
 execution: # EL Clients
   geth:
-    image: "ethpandaops/geth:gballet-kaustinen-with-shapella-fc8f4b9"
+    image: "ethpandaops/geth:kaustinen-with-shapella-6d7b22c"
 
