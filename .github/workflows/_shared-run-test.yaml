@@ -225,13 +225,23 @@ jobs:
 
         # helper to fetch task status for specific test id
         get_tasks_status() {
-          tasks=$(curl -s ${assertoor_url}/test/$1?json | jq -c ".tasks[] | {index, name, title, status, result}")
+          tasks=$(curl -s ${assertoor_url}/test/$1?json | jq -c ".tasks[] | {index, parent_index, name, title, status, result}")
+          declare -A task_graph_map
+          task_graph_map[0]=""
+
           while read task; do
             task_id=$(echo "$task" | jq -r ".index")
+            task_parent=$(echo "$task" | jq -r ".parent_index")
             task_name=$(echo "$task" | jq -r ".name")
             task_title=$(echo "$task" | jq -r ".title")
             task_status=$(echo "$task" | jq -r ".status")
             task_result=$(echo "$task" | jq -r ".result")
+
+            task_graph="${task_graph_map[$task_parent]}"
+            task_graph_map[$task_id]="$task_graph |"
+            if [ ! -z "$task_graph" ]; then
+              task_graph="${task_graph}- "
+            fi
 
             if [ "$task_status" == "pending" ]; then
               task_status="${GRAY}pending ${NC}"
@@ -249,7 +259,7 @@ jobs:
               task_result="${RED}failure${NC}"
             fi
             
-            echo -e " $task_id\t$task_status\t$task_result\t$task_name   \t$task_title"
+            echo -e " $(printf '%-4s' "$task_id")\t$task_status\t$task_result\t$(printf '%-50s' "$task_graph$task_name") \t$task_title"
           done <<< $(echo "$tasks")
         }
 

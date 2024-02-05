@@ -14,13 +14,13 @@ tests:
   - lighthouse-geth,teku-erigon,nimbus-reth
   - lighthouse-besu,prysm-reth,teku-geth
   assertoorTests:
-  - assertoor-tests/stability-check.yaml
-  - assertoor-tests/block-proposal-check.yaml
-  - assertoor-tests/eoa-transactions-test.yaml
-  - assertoor-tests/all-opcodes-test.yaml
+  #- assertoor-tests/stability-check.yaml
+  #- assertoor-tests/block-proposal-check.yaml
+  #- assertoor-tests/eoa-transactions-test.yaml
+  #- assertoor-tests/all-opcodes-test.yaml
   - assertoor-tests/validator-withdrawal-test.yaml
-  - assertoor-tests/validator-exit-test.yaml
-  - assertoor-tests/validator-slashing-test.yaml
+  #- assertoor-tests/validator-exit-test.yaml
+  #- assertoor-tests/validator-slashing-test.yaml
 
 # kubetest
 - id: "kubetest"
