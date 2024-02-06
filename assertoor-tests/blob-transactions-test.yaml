@@ -12,12 +12,12 @@ tasks:
     minClientCount: 1
 
 # check if all client pairs propose blocks with blob transactions
-- name: run_tasks_concurrent
+- name: run_task_background
   title: "Check if all clients propose blocks with blob transactions"
   config:
-    succeedTaskCount: 1
-    tasks:
-    - name: generate_blob_transactions
+    onBackgroundComplete: fail
+    backgroundTask:
+      name: generate_blob_transactions
       title: "Generate 2 blob transactions per block"
       config:
         childWallets: 20
@@ -30,8 +30,8 @@ tasks:
         blobSidecars: 1
       configVars:
         privateKey: "walletPrivkey"
-
-    - name: run_task_matrix
+    foregroundTask:
+      name: run_task_matrix
       title: "Check transaction inclusion with all client pairs"
       timeout: 30m
       configVars:
@@ -64,12 +64,12 @@ tasks:
       title: "Check if blob transactions can be sent via ${clientPairName}"
       config:
         tasks:
-        - name: run_tasks_concurrent
+        - name: run_task_background
           title: "Check if blob transactions can be sent via ${clientPairName}"
           config:
-            succeedTaskCount: 1
-            tasks:
-            - name: generate_blob_transactions
+            onBackgroundComplete: fail
+            backgroundTask:
+              name: generate_blob_transactions
               title: "Generate 2 blob transactions per block and send via ${clientPairName}"
               config:
                 childWallets: 20
@@ -83,7 +83,8 @@ tasks:
               configVars:
                 privateKey: "walletPrivkey"
                 clientPattern: "clientPairName"
-            - name: check_consensus_block_proposals
+            foregroundTask:
+              name: check_consensus_block_proposals
               title: "Wait for block proposal with >= 1 blobs"
               config:
                 minBlobCount: 1
