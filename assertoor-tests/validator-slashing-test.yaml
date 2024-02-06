@@ -63,12 +63,12 @@ tasks:
       title: "Check if attestation slashings can be sent via ${clientPairName}"
       config:
         tasks:
-        - name: run_tasks_concurrent
+        - name: run_task_background
           title: "Check if attestation slashings can be sent via ${clientPairName}"
           config:
-            succeedTaskCount: 1
-            tasks:
-            - name: generate_slashings
+            onBackgroundComplete: "fail"
+            backgroundTask:
+              name: generate_slashings
               title: "Generate 1 attester slashing per slot"
               config:
                 slashingType: "attester"
@@ -78,7 +78,8 @@ tasks:
                 indexCount: 100
               configVars:
                 mnemonic: "validatorMnemonic"
-            - name: check_consensus_block_proposals
+            foregroundTask:
+              name: check_consensus_block_proposals
               title: "Wait for block proposal with attestation slashings"
               config:
                 minAttesterSlashingCount: 1
@@ -141,12 +142,12 @@ tasks:
       title: "Check if proposer slashings can be sent via ${clientPairName}"
       config:
         tasks:
-        - name: run_tasks_concurrent
+        - name: run_task_background
           title: "Check if proposer slashings can be sent via ${clientPairName}"
           config:
-            succeedTaskCount: 1
-            tasks:
-            - name: generate_slashings
+            onBackgroundComplete: "fail"
+            backgroundTask:
+              name: generate_slashings
               title: "Generate 1 proposer slashing per slot"
               config:
                 slashingType: "proposer"
@@ -156,7 +157,8 @@ tasks:
                 indexCount: 100
               configVars:
                 mnemonic: "validatorMnemonic"
-            - name: check_consensus_block_proposals
+            foregroundTask:
+              name: check_consensus_block_proposals
               title: "Wait for block proposal with proposer slashings"
               config:
                 minProposerSlashingCount: 1
