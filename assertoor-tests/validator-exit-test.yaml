@@ -60,12 +60,12 @@ tasks:
       title: "Check if exits can be sent via ${clientPairName}"
       config:
         tasks:
-        - name: run_tasks_concurrent
+        - name: run_task_background
           title: "Check if exits can be sent via ${clientPairName}"
           config:
-            succeedTaskCount: 1
-            tasks:
-            - name: generate_exits
+            onBackgroundComplete: "fail"
+            backgroundTask:
+              name: generate_exits
               title: "Generate 50 exits (1 exit per slot)"
               config:
                 limitTotal: 50
@@ -74,7 +74,8 @@ tasks:
                 indexCount: 200
               configVars:
                 mnemonic: "validatorMnemonic"
-            - name: check_consensus_block_proposals
+            foregroundTask:
+              name: check_consensus_block_proposals
               title: "Wait for block proposal with exits"
               config:
                 minExitCount: 1
