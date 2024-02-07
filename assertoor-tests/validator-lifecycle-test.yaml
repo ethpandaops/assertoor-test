@@ -20,6 +20,7 @@ tasks:
       config:
         limitTotal: 300
         limitPerSlot: 20
+        limitPending: 50
         depositContract: "0x4242424242424242424242424242424242424242"
       configVars:
         walletPrivkey: "walletPrivkey"
