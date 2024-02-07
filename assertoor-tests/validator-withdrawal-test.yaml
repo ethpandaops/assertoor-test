@@ -11,120 +11,37 @@ tasks:
   config:
     minClientCount: 1
 
-# Check if all clients propose blocks with BLS changes that are directly sent to them
-- name: run_task_matrix
-  title: "Check if all clients propose blocks with BLS changes that are directly sent to them"
-  timeout: 1h
-  configVars:
-    matrixValues: "validatorPairNames"
+- name: run_task_background
+  title: "Check if all clients propose blocks with BLS changes"
   config:
-    runConcurrent: false
-    matrixVar: "validatorPairName"
-    task:
-      name: run_tasks
-      title: "Check if ${validatorPairName} proposes blocks with BLS changes"
+    onBackgroundComplete: "fail"
+    backgroundTask:
+      name: generate_bls_changes
+      title: "Generate 50 BLS changes (1 bls change per slot)"
       config:
-        stopChildOnResult: false
-        tasks:
-        - name: run_task_options
-          config:
-            retryOnFailure: true
-            maxRetryCount: 3
-            task:
-              name: run_tasks
-              config:
-                tasks:
-                - name: check_consensus_proposer_duty
-                  title: "Wait for ${validatorPairName} being selected for proposal in next slot"
-                  configVars:
-                    validatorNamePattern: "validatorPairName"
-                  config:
-                    minSlotDistance: 1
-                    maxSlotDistance: 1
-                
-                - name: run_task_background
-                  timeout: 1m
-                  config:
-                    onBackgroundComplete: "ignore"
-                    backgroundTask:
-                      name: generate_bls_changes
-                      title: "Generate 3 BLS changes (1 bls change per slot) and send via ${validatorPairName}"
-                      config:
-                        limitTotal: 3
-                        limitPerSlot: 1
-                        indexCount: 50
-                        targetAddress: 0x65D08a056c17Ae13370565B04cF77D2AfA1cB9FA
-                      configVars:
-                        mnemonic: "validatorMnemonic"
-                        clientPattern: "validatorPairName" # this only works if client names == validator names
-                    foregroundTask:
-                      name: check_consensus_block_proposals
-                      title: "Wait for block proposal with BLS changes from ${validatorPairName}"
-                      configVars:
-                        validatorNamePattern: "validatorPairName"
-                      config:
-                        minBlsChangeCount: 1
-        - name: "sleep"
-          title: "Wait 15sec to clear up pending bls changes"
-          config:
-            duration: 15s
-  
-# Check if all clients propose blocks with BLS changes that are sent via another client
-- name: run_task_matrix
-  title: "Check if all clients propose blocks with BLS changes that are sent via another client"
-  timeout: 1h
-  configVars:
-    matrixValues: "validatorPairNames"
-  config:
-    runConcurrent: false
-    matrixVar: "validatorPairName"
-    task:
-      name: run_tasks
-      title: "Check if ${validatorPairName} proposes blocks with BLS changes gossiped from another client"
+        limitTotal: 50
+        limitPerSlot: 1
+        indexCount: 100
+        targetAddress: 0x65D08a056c17Ae13370565B04cF77D2AfA1cB9FA
+      configVars:
+        mnemonic: "validatorMnemonic"
+
+    foregroundTask:
+      name: run_task_matrix
+      title: "Check bls change inclusion with all client pairs"
+      timeout: 1h
+      configVars:
+        matrixValues: "validatorPairNames"
       config:
-        stopChildOnResult: false
-        tasks:
-        - name: run_task_options
+        runConcurrent: true
+        matrixVar: "validatorPairName"
+        task:
+          name: check_consensus_block_proposals
+          title: "Wait for block proposal with BLS changes from ${validatorPairName}"
+          configVars:
+            validatorNamePattern: "validatorPairName"
           config:
-            retryOnFailure: true
-            maxRetryCount: 3
-            task:
-              name: run_tasks
-              config:
-                tasks:
-                - name: check_consensus_proposer_duty
-                  title: "Wait for ${validatorPairName} being selected for proposal in next slot"
-                  configVars:
-                    validatorNamePattern: "validatorPairName"
-                  config:
-                    minSlotDistance: 1
-                    maxSlotDistance: 1
-                - name: run_task_background
-                  timeout: 1m
-                  config:
-                    onBackgroundComplete: "ignore"
-                    backgroundTask:
-                      name: generate_bls_changes
-                      title: "Generate 3 BLS changes (1 bls change per slot) and send via another client"
-                      config:
-                        limitTotal: 3
-                        limitPerSlot: 1
-                        indexCount: 50
-                        targetAddress: 0x65D08a056c17Ae13370565B04cF77D2AfA1cB9FA
-                      configVars:
-                        mnemonic: "validatorMnemonic"
-                        excludeClientPattern: "validatorPairName" # this only works if client names == validator names
-                    foregroundTask:
-                      name: check_consensus_block_proposals
-                      title: "Wait for block proposal with BLS changes from ${validatorPairName}"
-                      configVars:
-                        validatorNamePattern: "validatorPairName"
-                      config:
-                        minBlsChangeCount: 1
-        - name: "sleep"
-          title: "Wait 15sec to clear up pending bls changes"
-          config:
-            duration: 15s
+            minBlsChangeCount: 1
 
 # ensure first 50 indexes have withdrawal address set
 - name: generate_bls_changes
@@ -156,8 +73,8 @@ tasks:
         tasks:
         - name: run_task_background
           title: "Check if BLS changes can be sent via ${clientPairName}"
-          timeout: 1m
           config:
+            onBackgroundComplete: "fail"
             backgroundTask:
               name: generate_bls_changes
               title: "Generate 50 BLS changes (1 bls change per slot)"
@@ -175,9 +92,9 @@ tasks:
               config:
                 minBlsChangeCount: 1
         - name: "sleep"
-          title: "Wait 15sec to clear up pending bls changes"
+          title: "Wait 30sec to clear up pending bls changes"
           config:
-            duration: 15s
+            duration: 30s
 
 
 # check if all client pairs propose blocks with withdrawals
