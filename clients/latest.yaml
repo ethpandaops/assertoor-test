@@ -15,7 +15,7 @@ execution: # EL Clients
   geth:
     image: "ethereum/client-go:stable"
   nethermind: 
-    image: "nethermind/nethermind:latest"
+    image: "ethpandaops/nethermind:master" # revert to nethermind/nethermind:latest once next release is out!
     params: ["--TxPool.BlobsSupport", "InMemory"]
   erigon:
     image: "thorax/erigon:stable"
