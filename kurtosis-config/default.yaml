@@ -1,6 +1,7 @@
 
 network_params:
   genesis_delay: 120
+  min_validator_withdrawability_delay: 1
   num_validator_keys_per_node: 250
 launch_additional_services: true
 additional_services:

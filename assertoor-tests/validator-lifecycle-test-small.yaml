@@ -103,37 +103,44 @@ tasks:
             mnemonic: "validatorMnemonic"
             targetAddress: "depositorAddress"
         foregroundTask:
-          name: run_task_matrix
-          title: "Wait for inclusion of all bls changes"
-          timeout: 1h
-          configVars:
-            matrixValues: "validatorPubkeys[:5]"
+          name: run_tasks_concurrent
+          title: "Wait for inclusion of all bls changes & partial withdrawal"
           config:
-            runConcurrent: true
-            matrixVar: "validatorPubkey"
-            task:
-              name: check_consensus_block_proposals
-              title: "Wait for bls change inclusion for ${validatorPubkey}"
-              config:
-                minBlsChangeCount: 1
+            tasks:
+            - name: run_task_matrix
+              title: "Wait for inclusion of all bls changes"
+              timeout: 1h
               configVars:
-                expectBlsChanges: "| [{publicKey: .validatorPubkey, address: .depositorAddress}]"
+                matrixValues: "validatorPubkeys[:5]"
+              config:
+                runConcurrent: true
+                matrixVar: "validatorPubkey"
+                task:
+                  name: check_consensus_block_proposals
+                  title: "Wait for bls change inclusion for ${validatorPubkey}"
+                  config:
+                    minBlsChangeCount: 1
+                  configVars:
+                    expectBlsChanges: "| [{publicKey: .validatorPubkey, address: .depositorAddress}]"
+            - name: run_task_matrix
+              title: "Wait for partial withdrawals"
+              timeout: 12h
+              configVars:
+                matrixValues: "validatorPubkeys[:1]"
+              config:
+                runConcurrent: true
+                matrixVar: "validatorPubkey"
+                task:
+                  name: check_consensus_block_proposals
+                  title: "Wait for withdrawal for ${validatorPubkey}"
+                  config:
+                    minWithdrawalCount: 1
+                  configVars:
+                    expectWithdrawals: "| [{publicKey: .validatorPubkey, address: .depositorAddress, minAmount: 31000000000000000000}]"
 
-    - name: run_task_matrix
-      title: "Wait for partial withdrawals"
-      timeout: 6h
-      configVars:
-        matrixValues: "validatorPubkeys[:1]"
-      config:
-        runConcurrent: true
-        matrixVar: "validatorPubkey"
-        task:
-          name: check_consensus_block_proposals
-          title: "Wait for withdrawal for ${validatorPubkey}"
-          config:
-            minWithdrawalCount: 1
-          configVars:
-            expectWithdrawals: "| [{publicKey: .validatorPubkey, address: .depositorAddress, minAmount: 31000000000000000000}]"
+# TODO: do some slashings (1-3 validators)
+
+# TODO: wait 256 epochs (withdrawal delay)
 
 # generate voluntary exits
 - name: run_tasks
