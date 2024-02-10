@@ -91,7 +91,7 @@ tasks:
     tasks:
 
     - name: run_task_background
-      title: "Generate voluntary exits & track inclusion"
+      title: "Generate BLS changes, track inclusion & wait for partial withdrawal"
       config:
         onBackgroundComplete: failOrIgnore
         backgroundTask:
@@ -104,11 +104,11 @@ tasks:
             targetAddress: "depositorAddress"
         foregroundTask:
           name: run_tasks_concurrent
-          title: "Wait for inclusion of all bls changes & partial withdrawal"
+          title: "Wait for inclusion of all BLS changes & partial withdrawal"
           config:
             tasks:
             - name: run_task_matrix
-              title: "Wait for inclusion of all bls changes"
+              title: "Wait for inclusion of all BLS changes"
               timeout: 1h
               configVars:
                 matrixValues: "validatorPubkeys[:5]"
@@ -117,30 +117,72 @@ tasks:
                 matrixVar: "validatorPubkey"
                 task:
                   name: check_consensus_block_proposals
-                  title: "Wait for bls change inclusion for ${validatorPubkey}"
+                  title: "Wait for BLS change inclusion for ${validatorPubkey}"
                   config:
                     minBlsChangeCount: 1
                   configVars:
                     expectBlsChanges: "| [{publicKey: .validatorPubkey, address: .depositorAddress}]"
-            - name: run_task_matrix
-              title: "Wait for partial withdrawals"
-              timeout: 12h
-              configVars:
-                matrixValues: "validatorPubkeys[:1]"
+            - name: check_consensus_block_proposals
+              title: "Wait for withdrawal for key 0"
               config:
-                runConcurrent: true
-                matrixVar: "validatorPubkey"
-                task:
-                  name: check_consensus_block_proposals
-                  title: "Wait for withdrawal for ${validatorPubkey}"
-                  config:
-                    minWithdrawalCount: 1
-                  configVars:
-                    expectWithdrawals: "| [{publicKey: .validatorPubkey, address: .depositorAddress, minAmount: 31000000000000000000}]"
+                minWithdrawalCount: 1
+              configVars:
+                expectWithdrawals: "| [{publicKey: .validatorPubkeys[0], address: .depositorAddress, minAmount: 31000000000000000000}]"
 
-# TODO: do some slashings (1-3 validators)
+# slash 2 validators before withdrawal delay (1 with withdrawal address, 1 without)
+- name: run_tasks
+  title: "Generate slashings & track inclusion"
+  config:
+    stopChildOnResult: false
+    tasks:
+    - name: run_task_background
+      title: "Generate slashings & track inclusion"
+      config:
+        onBackgroundComplete: failOrIgnore
+        backgroundTask:
+          name: run_tasks
+          title: "Generate slashings"
+          config:
+            stopChildOnResult: false
+            tasks:
+            - name: generate_slashings
+              title: "Generate attester slashing for key 1"
+              config:
+                slashingType: "attester"
+                limitTotal: 1
+                startIndex: 1
+                indexCount: 1
+              configVars:
+                mnemonic: "validatorMnemonic"
+            - name: generate_slashings
+              title: "Generate proposer slashing for key 6"
+              config:
+                slashingType: "proposer"
+                limitTotal: 1
+                startIndex: 6
+                indexCount: 1
+              configVars:
+                mnemonic: "validatorMnemonic"
+        foregroundTask:
+          name: run_tasks_concurrent
+          title: "Wait for inclusion of all slashings"
+          config:
+            tasks:
+            - name: check_consensus_block_proposals
+              title: "Wait for slashing inclusion for key 1"
+              config:
+                minBlsChangeCount: 1
+              configVars:
+                expectSlashings: "| [{publicKey: .validatorPubkeys[1], slashingType: 'attester'}]"
+            - name: check_consensus_block_proposals
+              title: "Wait for slashing inclusion for key 6"
+              config:
+                minBlsChangeCount: 1
+              configVars:
+                expectSlashings: "| [{publicKey: .validatorPubkeys[6], slashingType: 'proposer'}]"
 
-# TODO: wait 256 epochs (withdrawal delay)
+
+# TODO: wait 256 epochs (withdrawal delay) & check for full withdrawal of key 1
 
 # generate voluntary exits
 - name: run_tasks
