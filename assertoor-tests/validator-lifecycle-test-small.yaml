@@ -216,10 +216,10 @@ tasks:
       configVars:
         validatorPubKey: "validatorPubkeys[-1]"
     - name: check_consensus_slot_range
-      title: "Wait for validators to be exitable (epoch >= ${{ |(.lastValidatorInfo.validator.activation_epoch | tonumber) + 20 }})"
+      title: "Wait for validators to be exitable (epoch >= ${{ |(.lastValidatorInfo.validator.activation_epoch | tonumber) + 25 }})"
       timeout: 28h
       configVars:
-        minEpochNumber: "|(.lastValidatorInfo.validator.activation_epoch | tonumber) + 20"
+        minEpochNumber: "|(.lastValidatorInfo.validator.activation_epoch | tonumber) + 25"
 
 # generate voluntary exits
 - name: run_tasks
@@ -354,7 +354,7 @@ tasks:
               config:
                 slashingType: "attester"
                 limitTotal: 1
-                startIndex: 2
+                startIndex: 3
                 indexCount: 1
               configVars:
                 mnemonic: "validatorMnemonic"
@@ -363,7 +363,7 @@ tasks:
               config:
                 slashingType: "proposer"
                 limitTotal: 1
-                startIndex: 7
+                startIndex: 6
                 indexCount: 1
               configVars:
                 mnemonic: "validatorMnemonic"
@@ -428,23 +428,34 @@ tasks:
                     minBlsChangeCount: 1
                   configVars:
                     expectBlsChanges: "| [{publicKey: .validatorPubkey, address: .depositorAddress}]"
-            - name: run_task_matrix
+            - name: run_tasks_concurrent
               title: "Wait for full withdrawals"
               timeout: 28h
-              configVars:
-                matrixValues: "validatorPubkeys[5:]"
               config:
-                runConcurrent: true
-                matrixVar: "validatorPubkey"
-                task:
-                  name: check_consensus_block_proposals
-                  title: "Wait for partial withdrawal for ${validatorPubkey}"
+                tasks:
+                - name: check_consensus_block_proposals
+                  title: "Wait for partial withdrawal for ${{ validatorPubkey[5] }}"
                   config:
                     minWithdrawalCount: 1
                   configVars:
-                    expectWithdrawals: "| [{publicKey: .validatorPubkey, address: .depositorAddress, minAmount: 30000000000000000000}]"
+                    expectWithdrawals: "| [{publicKey: .validatorPubkey[5], address: .depositorAddress, minAmount: 63500000000000000000}]"
+                - name: check_consensus_block_proposals
+                  title: "Wait for partial withdrawal for ${{ validatorPubkey[8] }}"
+                  config:
+                    minWithdrawalCount: 1
+                  configVars:
+                    expectWithdrawals: "| [{publicKey: .validatorPubkey[8], address: .depositorAddress, minAmount: 31500000000000000000}]"
+                - name: check_consensus_block_proposals
+                  title: "Wait for partial withdrawal for ${{ validatorPubkey[9] }}"
+                  config:
+                    minWithdrawalCount: 1
+                  configVars:
+                    expectWithdrawals: "| [{publicKey: .validatorPubkey[9], address: .depositorAddress, minAmount: 31500000000000000000}]"
+              
 
-# all keys should be extied & withdrawn now.
+# all keys should be extied now.
+# slashed validators have a withdrawal delay of 2048 epochs, which is not tracked here. this affects key 2, 3, 6 & 7.
+# all other keys should be withdrawn now. (6 keys)
 
 cleanupTasks:
 - name: generate_bls_changes
