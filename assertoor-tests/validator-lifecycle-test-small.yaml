@@ -434,23 +434,23 @@ tasks:
               config:
                 tasks:
                 - name: check_consensus_block_proposals
-                  title: "Wait for partial withdrawal for ${{ validatorPubkey[5] }}"
+                  title: "Wait for partial withdrawal for ${{ validatorPubkeys[5] }}"
                   config:
                     minWithdrawalCount: 1
                   configVars:
-                    expectWithdrawals: "| [{publicKey: .validatorPubkey[5], address: .depositorAddress, minAmount: 63500000000000000000}]"
+                    expectWithdrawals: "| [{publicKey: .validatorPubkeys[5], address: .depositorAddress, minAmount: 63500000000000000000}]"
                 - name: check_consensus_block_proposals
-                  title: "Wait for partial withdrawal for ${{ validatorPubkey[8] }}"
+                  title: "Wait for partial withdrawal for ${{ validatorPubkeys[8] }}"
                   config:
                     minWithdrawalCount: 1
                   configVars:
-                    expectWithdrawals: "| [{publicKey: .validatorPubkey[8], address: .depositorAddress, minAmount: 31500000000000000000}]"
+                    expectWithdrawals: "| [{publicKey: .validatorPubkeys[8], address: .depositorAddress, minAmount: 31500000000000000000}]"
                 - name: check_consensus_block_proposals
-                  title: "Wait for partial withdrawal for ${{ validatorPubkey[9] }}"
+                  title: "Wait for partial withdrawal for ${{ validatorPubkeys[9] }}"
                   config:
                     minWithdrawalCount: 1
                   configVars:
-                    expectWithdrawals: "| [{publicKey: .validatorPubkey[9], address: .depositorAddress, minAmount: 31500000000000000000}]"
+                    expectWithdrawals: "| [{publicKey: .validatorPubkeys[9], address: .depositorAddress, minAmount: 31500000000000000000}]"
               
 
 # all keys should be extied now.
