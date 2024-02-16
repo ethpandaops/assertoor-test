@@ -10,6 +10,6 @@ additional_services:
 snooper_enabled: true
 disable_peer_scoring: true
 assertoor_params:
-  image: "ethpandaops/assertoor:master"
+  #image: "ethpandaops/assertoor:master"
   run_stability_check: false
   run_block_proposal_check: false
