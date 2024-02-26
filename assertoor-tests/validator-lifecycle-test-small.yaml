@@ -1,3 +1,4 @@
+id: validator-lifecycle-test-small
 name: "Validator Lifecycle Test (small)"
 timeout: 336h
 config:

@@ -1,3 +1,4 @@
+id: eoa-transactions-test
 name: "Transaction Test"
 timeout: 30m
 config:

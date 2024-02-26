@@ -1,3 +1,4 @@
+id: validator-lifecycle-test
 name: "Validator Lifecycle Test"
 timeout: 72h
 config:

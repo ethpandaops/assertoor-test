@@ -1,3 +1,4 @@
+id: validator-withdrawal-test-v2
 name: "Validator BLS Change & Withdrawal Test"
 timeout: 1h
 config:

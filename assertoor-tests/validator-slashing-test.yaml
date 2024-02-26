@@ -1,3 +1,4 @@
+id: validator-slashing-test
 name: "Validator Slashing Test"
 timeout: 1h
 config:

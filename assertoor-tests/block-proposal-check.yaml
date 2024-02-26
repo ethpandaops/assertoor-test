@@ -1,3 +1,4 @@
+id: block-proposal-check
 name: "Every client pair proposed a block"
 timeout: 2h
 disable: false

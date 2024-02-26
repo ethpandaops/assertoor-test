@@ -1,3 +1,4 @@
+id: blob-transactions-test
 name: "Blob Transaction Test"
 timeout: 30m
 config:
