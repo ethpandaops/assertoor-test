@@ -30,6 +30,33 @@ tests:
   - assertoor-tests/validator-exit-test.yaml
   - assertoor-tests/validator-slashing-test.yaml
 
+
+# Check validator client combinations
+- id: "vc-test"
+  schedule: false
+  name: "Test validator client combinations"
+  clients: clients/latest.yaml
+  kurtosis: kurtosis-config/default.yaml
+  worker: ubuntu-latest
+  backend: docker
+  clientPairs:
+  # CL: [lighthouse,prysm,teku,lodestar,nimbus]
+  # EL: [geth,besu,reth,erigon,nethermind]
+  - lighthouse/teku-geth,teku/prysm-geth,lodestar/nimbus-geth
+  - prysm/teku-geth,prysm/lodestar-geth,lighthouse/nimbus-geth
+  - lodestar/prysm-geth,nimbus/lodestar-geth,teku/lodestar-geth
+  - nimbus/prysm-geth,lighthouse/prysm-geth,lodestar/teku-geth
+  - nimbus/lighthouse-geth,prysm/nimbus-geth,lighthouse/lodestar-geth
+  - teku/lighthouse-geth,prysm/lighthouse-geth,teku/nimbus-geth
+  - lodestar/lighthouse-geth,nimbus/teku-geth,lighthouse/teku-geth
+  assertoorTests:
+  - assertoor-tests/stability-check.yaml
+  - assertoor-tests/block-proposal-check.yaml
+  - assertoor-tests/validator-withdrawal-test.yaml
+  - assertoor-tests/validator-exit-test.yaml
+  - assertoor-tests/validator-slashing-test.yaml
+
+
 # kubetest
 - id: "kubetest"
   schedule: false
