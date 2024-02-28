@@ -75,8 +75,18 @@ jobs:
               el_type=$(echo "$pair" | sed 's/^\(.*\)-\(.*\)$/\2/')
             fi
             
+            if [[ "$cl_type" == *"/"* ]]; then
+              vc_type=$(echo "$cl_type" | sed 's/^\(.*\)\/\(.*\)$/\2/')
+              cl_type=$(echo "$cl_type" | sed 's/^\(.*\)\/\(.*\)$/\1/')
+            else
+              vc_type=$cl_type
+            fi
+
             if [ "$cl_type" == "random" ]; then
               cl_type=$(cat $clients_file | yq -r ".consensus | keys" | shuf | tr -d ' -' | head -n 1)
+            fi
+            if [ "$vc_type" == "random" ]; then
+              vc_type=$(cat $clients_file | yq -r ".consensus | keys" | shuf | tr -d ' -' | head -n 1)
             fi
             if [ "$el_type" == "random" ]; then
               el_type=$(cat $clients_file | yq -r ".execution | keys" | shuf | tr -d ' -' | head -n 1)
@@ -85,6 +95,12 @@ jobs:
             cl_image="$(cat $clients_file | yq ".consensus.${cl_type}.image")"
             if [ "$cl_image" == "null" ]; then
               echo "Unknown CL client type: $cl_type"
+              exit 1
+            fi
+
+            vc_image="$(cat $clients_file | yq ".consensus.${vc_type}.vc_image // .consensus.${vc_type}.image")"
+            if [ "$vc_image" == "null" ]; then
+              echo "Unknown VC client type: $vc_type"
               exit 1
             fi
 
@@ -108,10 +124,18 @@ jobs:
               echo "    beacon_extra_params: $cl_extra_params" >> ./temp/participants.yaml
             fi
 
+            echo "    validator_client_type: $vc_type" >> ./temp/participants.yaml
+            echo "    validator_client_image: $vc_image" >> ./temp/participants.yaml
+            vc_extra_params="$(cat $clients_file | yq ".consensus.${cl_type}.vc_params")"
+            if [ "$vc_extra_params" != "null" ]; then
+              echo "    validator_extra_params: $vc_extra_params" >> ./temp/participants.yaml
+            fi
+
             echo "    count: 1" >> ./temp/participants.yaml
 
             echo "Client $client_idx"
             echo "CL: $cl_type  ($cl_image)"
+            echo "VC: $vc_type  ($vc_image)"
             echo "EL: $el_type  ($el_image)"
           done
         fi

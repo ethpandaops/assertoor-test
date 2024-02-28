@@ -3,7 +3,8 @@ consensus: # CL Clients
   teku: 
     image: "consensys/teku:24.1.0"
   prysm:
-    image: "gcr.io/prysmaticlabs/prysm/beacon-chain:HEAD-5cea6b,gcr.io/prysmaticlabs/prysm/validator:HEAD-5cea6b"
+    image: "gcr.io/prysmaticlabs/prysm/beacon-chain:HEAD-5cea6b"
+    vc_image: "gcr.io/prysmaticlabs/prysm/validator:HEAD-5cea6b"
   lighthouse: 
     image: "ethpandaops/lighthouse:unstable-38df87c"
   nimbus:
