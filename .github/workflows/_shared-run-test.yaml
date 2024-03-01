@@ -58,6 +58,10 @@ jobs:
         kurtosis_file="${{ inputs.kurtosis }}"
         pairs="${{ inputs.pairs }}"
 
+        if [ -z "$(which yq)" ]; then
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq
+        fi
+
         mkdir -p ./temp
         touch ./temp/participants.yaml
 
