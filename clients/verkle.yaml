@@ -1,9 +1,9 @@
 
 consensus: # CL Clients
   lighthouse: 
-    image: "ethpandaops/lighthouse:verkle-trees-capella"
+    image: "ethpandaops/lighthouse:verkle-trees-capella-2ffb8a9"
   lodestar:
-    image: "ethpandaops/lodestar:g11tech-verge"
+    image: "ethpandaops/lodestar:g11tech-verge-815364b"
 
 execution: # EL Clients
   geth:

@@ -127,13 +127,13 @@ tests:
   name: "Test verkle conversion"
   clients: clients/verkle.yaml
   kurtosis: kurtosis-config/verkle-conversion.yaml
-  worker: ubuntu-latest
+  worker: self-hosted,Linux
   backend: kubernetes
   kubernetes:
     cluster: k3s-berlin
     storageClass: local-path
   clientPairs:
-  - lighthouse-geth,lodestar-geth
+  - lodestar-geth,lodestar-geth
   assertoorTests:
   - assertoor-tests/verkle-conversion-check.yaml
 
