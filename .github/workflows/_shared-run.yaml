@@ -90,7 +90,7 @@ jobs:
       if: ${{ steps.config.outputs.backend == 'kubernetes' }}
       shell: bash
       run: |
-        rancher login --token "${{ secrets.RANCHER_TOKEN }}" "${{ secrets.RANCHER_URL }}"
+        rancher login --token "${{ secrets.RANCHER_TOKEN }}" "${{ secrets.RANCHER_URL }}" --context c-m-2m5z22jp:p-8vpkn
     - name: Login to kubernetes cluster
       if: ${{ steps.config.outputs.backend == 'kubernetes' }}
       shell: bash
