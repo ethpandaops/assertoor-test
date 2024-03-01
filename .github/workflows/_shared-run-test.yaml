@@ -216,7 +216,7 @@ jobs:
           kurtosis gateway &
         fi
 
-        kurtosis run github.com/kurtosis-tech/ethereum-package@bbusa/gballet-local-snap --enclave assertoor-${{ inputs.id }} --args-file ./temp/test-network.yaml
+        kurtosis run github.com/kurtosis-tech/ethereum-package@bbusa/gballet-local-snap --enclave assertoor-${{ inputs.id }} --args-file ./temp/test-network.yaml --image-download always
 
         enclave_dump=$(kurtosis enclave inspect assertoor-${{ inputs.id }})
 
