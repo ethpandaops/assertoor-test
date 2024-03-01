@@ -5,7 +5,7 @@ network_params:
   network: holesky-shadowfork-verkle
 snooper_enabled: true
 persistent: true
-node_selectors: {"kubernetes.io/hostname": "lenovo-berlin-02"}
+global_node_selectors: {"kubernetes.io/hostname": "lenovo-berlin-02"}
 launch_additional_services: true
 additional_services:
   - assertoor
