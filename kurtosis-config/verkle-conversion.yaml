@@ -10,5 +10,6 @@ launch_additional_services: true
 additional_services:
   - assertoor
 assertoor_params:
+  image: "ethpandaops/assertoor:verkle-support-040a2db"
   run_stability_check: false
   run_block_proposal_check: false

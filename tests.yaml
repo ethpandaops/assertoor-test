@@ -133,8 +133,7 @@ tests:
     cluster: k3s-berlin
     storageClass: local-path
   clientPairs:
-  - lighthouse-geth
-  - lodestar-geth
+  - lighthouse-geth,lodestar-geth
   assertoorTests:
   - assertoor-tests/verkle-conversion-check.yaml
 
