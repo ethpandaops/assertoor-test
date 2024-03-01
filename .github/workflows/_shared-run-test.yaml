@@ -47,7 +47,7 @@ on:
 jobs:
   run_test:
     name: "Run ${{ inputs.id }}"
-    runs-on: ${{ inputs.worker }}
+    runs-on: ${{ fromJson(inputs.worker) }}
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4

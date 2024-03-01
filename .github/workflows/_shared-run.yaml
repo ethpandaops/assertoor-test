@@ -43,7 +43,7 @@ jobs:
         name="$(echo "$testcfg" | jq -r .name)"
         clients="$(echo "$testcfg" | jq -r .clients)"
         kurtosis="$(echo "$testcfg" | jq -r .kurtosis)"
-        worker="$(echo "$testcfg" | jq -r .worker)"
+        worker="$(echo "$testcfg" | jq -c .worker)"
         backend="$(echo "$testcfg" | jq -r .backend)"
         kubernetes_cluster="$(echo "$testcfg" | jq -r .kubernetes.cluster)"
         kubernetes_storageclass="$(echo "$testcfg" | jq -r .kubernetes.storageClass)"

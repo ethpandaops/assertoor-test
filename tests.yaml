@@ -127,7 +127,8 @@ tests:
   name: "Test verkle conversion"
   clients: clients/verkle.yaml
   kurtosis: kurtosis-config/verkle-conversion.yaml
-  worker: self-hosted,Linux
+  worker:
+  - services-small-shared
   backend: kubernetes
   kubernetes:
     cluster: k3s-berlin
