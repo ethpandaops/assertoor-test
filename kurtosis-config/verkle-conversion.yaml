@@ -1,0 +1,14 @@
+
+network_params:
+  electra_fork_epoch: 1
+  genesis_delay: 100
+  network: holesky-shadowfork-verkle
+snooper_enabled: true
+persistent: true
+node_selectors: {"kubernetes.io/hostname": "lenovo-berlin-02"}
+launch_additional_services: true
+additional_services:
+  - assertoor
+assertoor_params:
+  run_stability_check: false
+  run_block_proposal_check: false

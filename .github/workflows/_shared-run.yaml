@@ -95,7 +95,7 @@ jobs:
       if: ${{ steps.config.outputs.backend == 'kubernetes' }}
       shell: bash
       run: |
-        rancher kubectl config set-context "${{ steps.config.outputs.kubernetes_cluster }}"
+        rancher kubectl config use-context "${{ steps.config.outputs.kubernetes_cluster }}"
     - name: Generate kubeconfig
       if: ${{ steps.config.outputs.backend == 'kubernetes' }}
       id: kubeconfig

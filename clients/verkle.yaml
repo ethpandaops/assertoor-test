@@ -7,5 +7,5 @@ consensus: # CL Clients
 
 execution: # EL Clients
   geth:
-    image: "ethpandaops/geth:kaustinen-with-shapella"
+    image: "ethpandaops/geth:add-conversion-status-rpc"
 

@@ -122,3 +122,19 @@ tests:
   #- assertoor-tests/validator-exit-test.yaml
   - assertoor-tests/validator-slashing-test.yaml
 
+- id: "verkle-conversion"
+  schedule: false
+  name: "Test verkle conversion"
+  clients: clients/verkle.yaml
+  kurtosis: kurtosis-config/verkle-conversion.yaml
+  worker: ubuntu-latest
+  backend: kubernetes
+  kubernetes:
+    cluster: k3s-berlin
+    storageClass: local-path
+  clientPairs:
+  - lighthouse-geth
+  - lodestar-geth
+  assertoorTests:
+  - assertoor-tests/verkle-conversion-check.yaml
+

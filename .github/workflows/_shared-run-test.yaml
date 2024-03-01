@@ -179,7 +179,9 @@ jobs:
       shell: bash
       run: |
         set -e
-        kubectl get nodes > /dev/null
+        kubectl config use-context ${{ inputs.kubeCluster }}
+        kubectl get nodes
+
         echo "Kubernetes engine is ready!"
     - name: Configure kurtosis to use kubernetes backend
       if: ${{ inputs.backend == 'kubernetes' }}
@@ -203,7 +205,6 @@ jobs:
         kurtosis cluster set cloud
         kurtosis gateway &
 
-        kurtosis engine restart || true
         kurtosis engine status
         kurtosis enclave ls
 
