@@ -1,27 +1,27 @@
 
 consensus: # CL Clients
   teku: 
-    image: "consensys/teku:24.1.0"
+    image: "consensys/teku:latest"
   prysm:
-    image: "gcr.io/prysmaticlabs/prysm/beacon-chain:HEAD-5cea6b"
-    vc_image: "gcr.io/prysmaticlabs/prysm/validator:HEAD-5cea6b"
+    image: "gcr.io/prysmaticlabs/prysm/beacon-chain:stable"
+    vc_image: "gcr.io/prysmaticlabs/prysm/validator:stable"
   lighthouse: 
-    image: "ethpandaops/lighthouse:unstable-38df87c"
+    image: "sigp/lighthouse:latest"
   nimbus:
-    image: "statusim/nimbus-eth2:multiarch-v24.1.1"
+    image: "statusim/nimbus-eth2:amd64-latest"
   lodestar:
-    image: "ethpandaops/lodestar:unstable-9262064"
+    image: "chainsafe/lodestar:latest"
 
 execution: # EL Clients
   geth:
-    image: "ethereum/client-go:v1.13.9"
+    image: "ethereum/client-go:stable"
   nethermind: 
-    image: "nethermind/nethermind:1.25.0"
+    image: "ethpandaops/nethermind:master" # revert to nethermind/nethermind:latest once next release is out!
     params: ["--TxPool.BlobsSupport", "InMemory"]
   erigon:
-    image: "thorax/erigon:v2.56.1"
+    image: "thorax/erigon:stable"
   besu:
-    image: "hyperledger/besu:24.1.0"
+    image: "hyperledger/besu:latest"
   reth:
-    image: "ghcr.io/paradigmxyz/reth:v0.1.0-alpha.14"
+    image: "ghcr.io/paradigmxyz/reth"
 
