@@ -12,13 +12,15 @@ tests:
   clientPairs:
   # CL: [lighthouse,prysm,teku,lodestar,nimbus]
   # EL: [geth,besu,reth,erigon,nethermind]
-  - lodestar-geth,lighthouse-geth,nimbus-erigon,teku-reth
-  - lodestar-erigon,nimbus-reth,prysm-reth,teku-besu
-  - lodestar-besu,lighthouse-reth,nimbus-nethermind,prysm-reth
-  - lighthouse-erigon,teku-erigon,prysm-nethermind,prysm-reth
-  - lodestar-nethermind,prysm-geth,teku-geth,nimbus-besu
-  - prysm-besu,lodestar-reth,lighthouse-nethermind,nimbus-geth
-  - lighthouse-besu,teku-nethermind,prysm-erigon,lighthouse-geth
+  - lodestar-geth,lighthouse-geth,nimbus-erigon
+  - nimbus-besu,teku-reth,teku-besu
+  - lodestar-erigon,nimbus-reth,prysm-reth
+  - lodestar-besu,lighthouse-reth,nimbus-nethermind
+  - lighthouse-erigon,teku-erigon,prysm-nethermind
+  - lodestar-nethermind,prysm-geth,teku-geth
+  - prysm-besu,lodestar-reth,lighthouse-nethermind
+  - lighthouse-besu,teku-nethermind,prysm-erigon
+  - nimbus-geth,lighthouse-geth,prysm-reth
   assertoorTests:
   - assertoor-tests/stability-check.yaml
   - assertoor-tests/block-proposal-check.yaml
@@ -95,6 +97,9 @@ tests:
   - assertoor-tests/stability-check.yaml
   - assertoor-tests/block-proposal-check.yaml
   - assertoor-tests/eoa-transactions-test.yaml
+  - assertoor-tests/blob-transactions-test.yaml
+  - assertoor-tests/all-opcodes-test.yaml
+  - assertoor-tests/dencun-opcodes-test.yaml
   - assertoor-tests/validator-withdrawal-test.yaml
   - assertoor-tests/validator-exit-test.yaml
   - assertoor-tests/validator-slashing-test.yaml
