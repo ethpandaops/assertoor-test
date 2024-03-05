@@ -139,4 +139,3 @@ tests:
   - lodestar-geth,lodestar-geth
   assertoorTests:
   - assertoor-tests/verkle-conversion-check.yaml
-

@@ -3,6 +3,7 @@ network_params:
   electra_fork_epoch: 1
   genesis_delay: 100
   network: holesky-shadowfork-verkle
+  network_sync_base_url: http://10.10.101.7:9000/snapshots/
 snooper_enabled: true
 persistent: true
 global_node_selectors: {"kubernetes.io/hostname": "lenovo-berlin-02"}
