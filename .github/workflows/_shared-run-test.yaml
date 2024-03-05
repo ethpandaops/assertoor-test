@@ -48,6 +48,7 @@ jobs:
   run_test:
     name: "Run ${{ inputs.id }}"
     runs-on: ${{ fromJson(inputs.worker) }}
+    timeout-minutes: 1440
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
@@ -220,9 +221,9 @@ jobs:
           kurtosis gateway &
         fi
 
-        kurtosis run github.com/kurtosis-tech/ethereum-package@bbusa/gballet-local-snap --enclave assertoor-${{ inputs.id }} --args-file ./temp/test-network.yaml --image-download always --non-blocking-tasks --verbosity DETAILED
+        kurtosis run github.com/kurtosis-tech/ethereum-package@bbusa/gballet-local-snap --enclave assertoor-${{ github.run_id }}-${{ inputs.id }} --args-file ./temp/test-network.yaml --image-download always --non-blocking-tasks --verbosity DETAILED
 
-        enclave_dump=$(kurtosis enclave inspect assertoor-${{ inputs.id }})
+        enclave_dump=$(kurtosis enclave inspect assertoor-${{ github.run_id }}-${{ inputs.id }})
 
         assertoor_url=$(echo "$enclave_dump" | grep assertoor | grep http | sed 's/.*\(http:\/\/[0-9.:]\+\).*/\1/')
         echo "assertoor_url: ${assertoor_url}"
@@ -242,7 +243,7 @@ jobs:
 
         if [ "${{ inputs.backend }}" == "kubernetes" ]; then
           # print assertor logs
-          kubectl -n kt-assertoor-${{ inputs.id }} logs -f assertoor &
+          kubectl -n kt-assertoor-${{ github.run_id }}-${{ inputs.id }} logs -f assertoor &
 
           # run kurtosis gateway
           kurtosis gateway &
@@ -377,21 +378,26 @@ jobs:
           echo "failed_test_status=" >> $GITHUB_OUTPUT
         fi
 
-    - name: Generate dump and remove kurtosis enclave
+    - name: Generate enclave dump
       shell: bash
       run: |
         mkdir -p ./temp/dump
         cd ./temp/dump
         cp ../test-network.yaml ./kurtosis-params.yaml
 
-        kurtosis enclave dump assertoor-${{ inputs.id }}
-        kurtosis enclave rm -f assertoor-${{ inputs.id }}
-
+        kurtosis enclave dump assertoor-${{ github.run_id }}-${{ inputs.id }}
+        kurtosis enclave rm -f assertoor-${{ github.run_id }}-${{ inputs.id }}
     - name: Upload dump artifact
       uses: actions/upload-artifact@v3
       with:
         name: "kurtosis-enclave-dump-${{ inputs.id }}"
         path: ./temp/dump
+
+    - name: Remove kurtosis enclave
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        kurtosis enclave rm -f assertoor-${{ github.run_id }}-${{ inputs.id }}
     
     - name: Return test result
       shell: bash
