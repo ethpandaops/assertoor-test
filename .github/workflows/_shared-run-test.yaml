@@ -334,7 +334,7 @@ jobs:
             else
               status_name="$test_status"
             fi
-            status_lines+=("  $(printf '%-3s' "$test_id") $status_name \t$test_name")
+            status_lines+=("  $(printf '%-32s' "$test_id") $status_name \t$test_name")
             total_tests=$(expr $total_tests + 1)
           done <<< $(echo "$tests")
 
