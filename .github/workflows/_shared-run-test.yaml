@@ -386,7 +386,6 @@ jobs:
         cp ../test-network.yaml ./kurtosis-params.yaml
 
         kurtosis enclave dump assertoor-${{ github.run_id }}-${{ inputs.id }}
-        kurtosis enclave rm -f assertoor-${{ github.run_id }}-${{ inputs.id }}
     - name: Upload dump artifact
       uses: actions/upload-artifact@v3
       with:
@@ -397,7 +396,7 @@ jobs:
       if: ${{ always() }}
       shell: bash
       run: |
-        kurtosis enclave rm -f assertoor-${{ github.run_id }}-${{ inputs.id }}
+        kurtosis enclave rm -f assertoor-${{ github.run_id }}-${{ inputs.id }} || true
     
     - name: Return test result
       shell: bash
