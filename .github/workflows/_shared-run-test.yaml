@@ -135,25 +135,25 @@ jobs:
             fi
             el_image=$(resolve_image "$el_image")
 
-            echo "  - el_client_type: $el_type" >> ./temp/participants.yaml
-            echo "    el_client_image: $el_image" >> ./temp/participants.yaml
+            echo "  - el_type: $el_type" >> ./temp/participants.yaml
+            echo "    el_image: $el_image" >> ./temp/participants.yaml
             el_extra_params="$(cat $clients_file | yq ".execution.${el_type}.params")"
             if [ "$el_extra_params" != "null" ]; then
               echo "    el_extra_params: $el_extra_params" >> ./temp/participants.yaml
             fi
 
-            echo "    cl_client_type: $cl_type" >> ./temp/participants.yaml
-            echo "    cl_client_image: $cl_image" >> ./temp/participants.yaml
+            echo "    cl_type: $cl_type" >> ./temp/participants.yaml
+            echo "    cl_image: $cl_image" >> ./temp/participants.yaml
             cl_extra_params="$(cat $clients_file | yq ".consensus.${cl_type}.params")"
             if [ "$cl_extra_params" != "null" ]; then
-              echo "    beacon_extra_params: $cl_extra_params" >> ./temp/participants.yaml
+              echo "    cl_extra_params: $cl_extra_params" >> ./temp/participants.yaml
             fi
 
-            echo "    validator_client_type: $vc_type" >> ./temp/participants.yaml
-            echo "    validator_client_image: $vc_image" >> ./temp/participants.yaml
+            echo "    vc_type: $vc_type" >> ./temp/participants.yaml
+            echo "    vc_image: $vc_image" >> ./temp/participants.yaml
             vc_extra_params="$(cat $clients_file | yq ".consensus.${cl_type}.vc_params")"
             if [ "$vc_extra_params" != "null" ]; then
-              echo "    validator_extra_params: $vc_extra_params" >> ./temp/participants.yaml
+              echo "    vc_extra_params: $vc_extra_params" >> ./temp/participants.yaml
             fi
 
             echo "    count: 1" >> ./temp/participants.yaml
