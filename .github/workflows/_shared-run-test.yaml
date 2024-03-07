@@ -261,17 +261,8 @@ jobs:
         RED='\033[0;31m'
         NC='\033[0m'
 
-        if [ "${{ inputs.backend }}" == "kubernetes" ]; then
-          # print assertor logs
-          kubectl -n kt-assertoor-${{ github.run_id }}-${{ inputs.id }} logs -f assertoor &
-
-          # run kurtosis gateway
-          kurtosis gateway &
-        else
-          # print assertor logs
-          assertoor_container=$(docker container list | grep assertoor | sed 's/^\([^ ]\+\) .*$/\1/')
-          docker logs -f $assertoor_container &
-        fi
+        # print assertoor logs in background
+        kurtosis service logs assertoor-${{ github.run_id }}-${{ inputs.id }} assertoor -f &
 
         # helper to fetch task status for specific test id
         get_tasks_status() {
