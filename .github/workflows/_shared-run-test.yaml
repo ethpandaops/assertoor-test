@@ -68,11 +68,11 @@ jobs:
 
         if [ ! -z "$pairs" ]; then
           resolve_image() {
-            tag_pattern=$(echo "$1" | sed 's/^\(.*\)::\(.*\)$/\2/')
             image="$1"
 
-            if [ ! -z "$tag_pattern" ]; then
+            if [ ! -z "$(echo "$1" | grep -E '^.*::.*$')" ]; then
               repository=$(echo "$1" | sed 's/^\(.*\)::\(.*\)$/\1/')
+              tag_pattern=$(echo "$1" | sed 's/^\(.*\)::\(.*\)$/\2/')
               while read tag; do
                 if [ ! -z "$(echo "$tag" | grep -E $tag_pattern)" ]; then
                   image="${repository}:${tag}"
