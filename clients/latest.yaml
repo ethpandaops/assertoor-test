@@ -19,7 +19,7 @@ execution: # EL Clients
     image: "ethpandaops/nethermind:master" # revert to nethermind/nethermind:latest once next release is out!
     params: ["--TxPool.BlobsSupport", "InMemory"]
   erigon:
-    image: "thorax/erigon:stable"
+    image: "thorax/erigon::^v[0-9]+.[0-9]+.[0-9]+$"
   besu:
     image: "hyperledger/besu:latest"
   reth:

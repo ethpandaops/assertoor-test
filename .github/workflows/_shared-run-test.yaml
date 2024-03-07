@@ -67,6 +67,23 @@ jobs:
         touch ./temp/participants.yaml
 
         if [ ! -z "$pairs" ]; then
+          resolve_image() {
+            tag_pattern=$(echo "$1" | sed 's/^\(.*\)::\(.*\)$/\2/')
+            image="$1"
+
+            if [ ! -z "$tag_pattern" ]; then
+              repository=$(echo "$1" | sed 's/^\(.*\)::\(.*\)$/\1/')
+              while read tag; do
+                if [ ! -z "$(echo "$tag" | grep -E $tag_pattern)" ]; then
+                  image="${repository}:${tag}"
+                  break
+                fi
+              done <<< $(curl --silent "https://hub.docker.com/v2/repositories/${repository}/tags?page_size=1000" | jq -r ".results[].name")
+            fi
+
+            echo "$image"
+          }
+
           echo "participants:" >> ./temp/participants.yaml
           client_idx=0
           for pair in $(echo $pairs | tr "," "\n")
@@ -102,18 +119,21 @@ jobs:
               echo "Unknown CL client type: $cl_type"
               exit 1
             fi
+            cl_image=$(resolve_image "$cl_image")
 
             vc_image="$(cat $clients_file | yq ".consensus.${vc_type}.vc_image // .consensus.${vc_type}.image")"
             if [ "$vc_image" == "null" ]; then
               echo "Unknown VC client type: $vc_type"
               exit 1
             fi
+            vc_image=$(resolve_image "$vc_image")
 
             el_image="$(cat $clients_file | yq ".execution.${el_type}.image")"
             if [ "$el_image" == "null" ]; then
               echo "Unknown EL client type: $el_type"
               exit 1
             fi
+            el_image=$(resolve_image "$el_image")
 
             echo "  - el_client_type: $el_type" >> ./temp/participants.yaml
             echo "    el_client_image: $el_image" >> ./temp/participants.yaml
