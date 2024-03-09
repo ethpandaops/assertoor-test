@@ -1,5 +1,5 @@
-id: validator-lifecycle-test-small
-name: "Validator Lifecycle Test (small)"
+id: validator-lifecycle-test-v2
+name: "Validator Lifecycle Test (v2)"
 timeout: 336h
 config:
   #walletPrivkey: ""
