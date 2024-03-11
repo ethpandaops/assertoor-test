@@ -31,42 +31,6 @@ tasks:
   config:
     stopChildOnResult: false
     tasks:
-    - name: generate_deposits
-      title: "Generate 10 deposits"
-      config:
-        limitTotal: 10
-        limitPerSlot: 2
-        limitPending: 2
-        awaitReceipt: true
-        failOnReject: true
-        validatorPubkeysResultVar: "validatorPubkeys"
-      configVars:
-        walletPrivkey: "depositorPrivateKey"
-        mnemonic: "validatorMnemonic"
-        depositContract: "depositContract"
-
-    - name: generate_deposits
-      title: "Generate double deposit for index 0"
-      config:
-        limitTotal: 1
-        awaitReceipt: true
-        failOnReject: true
-      configVars:
-        walletPrivkey: "depositorPrivateKey"
-        mnemonic: "validatorMnemonic"
-        depositContract: "depositContract"
-    - name: generate_deposits
-      title: "Generate double deposit for index 5"
-      config:
-        limitTotal: 1
-        startIndex: 5
-        awaitReceipt: true
-        failOnReject: true
-      configVars:
-        walletPrivkey: "depositorPrivateKey"
-        mnemonic: "validatorMnemonic"
-        depositContract: "depositContract"
-
     - name: run_task_matrix
       title: "Wait for inclusion of all deposits"
       timeout: 48h
