@@ -12,10 +12,6 @@ tasks:
   config:
     minClientCount: 1
 
-- name: generate_random_mnemonic
-  title: "Generate random mnemonic"
-  config:
-    mnemonicResultVar: "validatorMnemonic"
 - name: generate_child_wallet
   title: "Generate wallet for lifecycle test"
   config:
