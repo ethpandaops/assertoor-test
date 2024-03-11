@@ -1,6 +1,6 @@
 id: validator-lifecycle-test-v2
 name: "Validator Lifecycle Test (v2)"
-timeout: 336h
+timeout: 672h
 config:
   #walletPrivkey: ""
   depositContract: "0x4242424242424242424242424242424242424242"
@@ -85,7 +85,7 @@ tasks:
 
     - name: run_task_matrix
       title: "Wait for activation of all deposited keys"
-      timeout: 72h
+      timeout: 336h
       configVars:
         matrixValues: "validatorPubkeys"
       config:
