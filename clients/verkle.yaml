@@ -7,5 +7,5 @@ consensus: # CL Clients
 
 execution: # EL Clients
   geth:
-    image: "ethpandaops/geth:add-conversion-status-rpc"
+    image: "ethpandaops/geth:gballet-transition-post-genesis-0301989"
 
