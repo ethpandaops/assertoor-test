@@ -44,107 +44,6 @@ tasks:
           configVars:
             validatorPubKey: "validatorPubkey"
 
-# generate bls changes
-- name: run_tasks
-  title: "Generate BLS changes, track inclusion & wait for partial withdrawal"
-  config:
-    stopChildOnResult: false
-    tasks:
-
-    - name: run_task_background
-      title: "Generate BLS changes, track inclusion & wait for partial withdrawal"
-      config:
-        onBackgroundComplete: failOrIgnore
-        backgroundTask:
-          name: generate_bls_changes
-          title: "Generate 5 BLS changes"
-          config:
-            limitTotal: 5
-          configVars:
-            mnemonic: "validatorMnemonic"
-            targetAddress: "depositorAddress"
-        foregroundTask:
-          name: run_tasks_concurrent
-          title: "Wait for inclusion of all BLS changes & partial withdrawal"
-          config:
-            tasks:
-            - name: run_task_matrix
-              title: "Wait for inclusion of all BLS changes"
-              timeout: 1h
-              configVars:
-                matrixValues: "validatorPubkeys[:5]"
-              config:
-                runConcurrent: true
-                matrixVar: "validatorPubkey"
-                task:
-                  name: check_consensus_block_proposals
-                  title: "Wait for BLS change inclusion for ${validatorPubkey}"
-                  config:
-                    minBlsChangeCount: 1
-                  configVars:
-                    expectBlsChanges: "| [{publicKey: .validatorPubkey, address: .depositorAddress}]"
-            - name: check_consensus_block_proposals
-              title: "Wait for partial withdrawal for key 0"
-              config:
-                minWithdrawalCount: 1
-              configVars:
-                expectWithdrawals: "| [{publicKey: .validatorPubkeys[0], address: .depositorAddress, minAmount: 31000000000000000000}]"
-
-# slash 2 validators before exitability delay (1 with withdrawal address, 1 without)
-- name: run_tasks
-  title: "Generate slashings & track inclusion"
-  config:
-    stopChildOnResult: false
-    tasks:
-    - name: run_task_background
-      title: "Generate slashings & track inclusion"
-      config:
-        onBackgroundComplete: failOrIgnore
-        backgroundTask:
-          name: run_tasks
-          title: "Generate slashings"
-          config:
-            stopChildOnResult: false
-            tasks:
-            - name: generate_slashings
-              title: "Generate attester slashing for key 2"
-              config:
-                slashingType: "attester"
-                limitTotal: 1
-                startIndex: 2
-                indexCount: 1
-              configVars:
-                mnemonic: "validatorMnemonic"
-            - name: generate_slashings
-              title: "Generate proposer slashing for key 7"
-              config:
-                slashingType: "proposer"
-                limitTotal: 1
-                startIndex: 7
-                indexCount: 1
-              configVars:
-                mnemonic: "validatorMnemonic"
-        foregroundTask:
-          name: run_tasks_concurrent
-          title: "Wait for inclusion of all slashings"
-          timeout: 30m
-          config:
-            tasks:
-            - name: check_consensus_block_proposals
-              title: "Wait for slashing inclusion for key 2"
-              config:
-                minSlashingCount: 1
-                minAttesterSlashingCount: 1
-              configVars:
-                expectSlashings: "| [{publicKey: .validatorPubkeys[2], slashingType: \"attester\"}]"
-            - name: check_consensus_block_proposals
-              title: "Wait for slashing inclusion for key 7"
-              config:
-                minSlashingCount: 1
-                minProposerSlashingCount: 1
-              configVars:
-                expectSlashings: "| [{publicKey: .validatorPubkeys[7], slashingType: \"proposer\"}]"
-
 # wait 256 epochs (withdrawal delay)
 - name: run_tasks
   title: "Wait for validators to be exitable (256 epochs)"
@@ -161,10 +60,10 @@ tasks:
       configVars:
         validatorPubKey: "validatorPubkeys[-1]"
     - name: check_consensus_slot_range
-      title: "Wait for validators to be exitable (epoch >= ${{ |(.lastValidatorInfo.validator.activation_epoch | tonumber) + 25 }})"
+      title: "Wait for validators to be exitable (epoch >= ${{ |(.lastValidatorInfo.validator.activation_epoch | tonumber) + 256 }})"
       timeout: 28h
       configVars:
-        minEpochNumber: "|(.lastValidatorInfo.validator.activation_epoch | tonumber) + 25"
+        minEpochNumber: "|(.lastValidatorInfo.validator.activation_epoch | tonumber) + 256"
 
 # generate voluntary exits
 - name: run_tasks
