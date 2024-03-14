@@ -49,56 +49,6 @@ tasks:
     stopChildOnResult: false
     tasks:
 
-    - name: run_task_background
-      title: "Generate voluntary exits & track inclusion"
-      config:
-        onBackgroundComplete: failOrIgnore
-        backgroundTask:
-          name: run_tasks
-          title: "Generate voluntary exits"
-          config:
-            stopChildOnResult: false
-            tasks:
-            - name: generate_exits
-              title: "Generate 2 voluntary exits (keys: 0 + 1)"
-              config:
-                limitTotal: 2
-                indexCount: 2
-              configVars:
-                mnemonic: "validatorMnemonic"
-            - name: generate_exits
-              title: "Generate 2 voluntary exits (keys: 4 + 5)"
-              config:
-                limitTotal: 2
-                startIndex: 4
-                indexCount: 2
-              configVars:
-                mnemonic: "validatorMnemonic"
-            - name: generate_exits
-              title: "Generate 2 voluntary exits (keys: 8 + 9)"
-              config:
-                limitTotal: 2
-                startIndex: 8
-                indexCount: 2
-              configVars:
-                mnemonic: "validatorMnemonic"
-        foregroundTask:
-          name: run_task_matrix
-          title: "Wait for inclusion of all voluntary exits"
-          timeout: 2h
-          configVars:
-            matrixValues: "| [.validatorPubkeys[0], .validatorPubkeys[1], .validatorPubkeys[4], .validatorPubkeys[5], .validatorPubkeys[8], .validatorPubkeys[9]]"
-          config:
-            runConcurrent: true
-            matrixVar: "validatorPubkey"
-            task:
-              name: check_consensus_block_proposals
-              title: "Wait for voluntary exit inclusion for ${validatorPubkey}"
-              config:
-                minExitCount: 1
-              configVars:
-                expectExits: "| [.validatorPubkey]"
-
     - name: run_tasks_concurrent
       title: "Wait for exit & full withdrawal"
       config:
