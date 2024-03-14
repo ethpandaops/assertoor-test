@@ -238,7 +238,7 @@ jobs:
         kurtosis gateway &
 
         kurtosis engine status
-        kurtosis enclave ls
+        kurtosis enclave ls || ( kurtosis engine restart && kurtosis enclave ls )
 
     - name: Run Kurtosis
       shell: bash
