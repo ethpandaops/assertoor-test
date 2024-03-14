@@ -60,6 +60,7 @@ jobs:
         fi
 
         if [ -z "$(which envsubst)" ]; then
+          sudo apt-get update
           sudo apt-get install gettext-base
         fi
     - name: "Generate kurtosis config with client pairs: ${{ inputs.pairs }}"
