@@ -21,29 +21,6 @@ tasks:
   configVars:
     privateKey: "walletPrivkey"
 
-# generate deposits & wait for activation
-- name: run_tasks
-  title: "Generate deposits & track inclusion"
-  config:
-    stopChildOnResult: false
-    tasks:
-    - name: run_task_matrix
-      title: "Wait for activation of all deposited keys"
-      timeout: 72h
-      configVars:
-        matrixValues: "validatorPubkeys"
-      config:
-        runConcurrent: true
-        matrixVar: "validatorPubkey"
-        task:
-          name: check_consensus_validator_status
-          title: "Wait for validator to become activated (${validatorPubkey})"
-          config:
-            validatorStatus:
-            - active_ongoing
-          configVars:
-            validatorPubKey: "validatorPubkey"
-
 # wait 256 epochs (withdrawal delay)
 - name: run_tasks
   title: "Wait for validators to be exitable (256 epochs)"
