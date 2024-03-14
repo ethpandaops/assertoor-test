@@ -217,10 +217,10 @@ tasks:
       configVars:
         validatorPubKey: "validatorPubkeys[-1]"
     - name: check_consensus_slot_range
-      title: "Wait for validators to be exitable (epoch >= ${{ |(.lastValidatorInfo.validator.activation_epoch | tonumber) + 25 }})"
-      timeout: 28h
+      title: "Wait for validators to be exitable (epoch >= ${{ |(.lastValidatorInfo.validator.activation_epoch | tonumber) + 256 }})"
+      timeout: 28h  # 256 epochs = ~27.3h
       configVars:
-        minEpochNumber: "|(.lastValidatorInfo.validator.activation_epoch | tonumber) + 25"
+        minEpochNumber: "|(.lastValidatorInfo.validator.activation_epoch | tonumber) + 256"
 
 # generate voluntary exits
 - name: run_tasks
