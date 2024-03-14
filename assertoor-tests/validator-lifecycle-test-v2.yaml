@@ -1,4 +1,4 @@
-id: validator-lifecycle-test-v2
+id: validator-lifecycle-test-v2-1
 name: "Validator Lifecycle Test (v2)"
 timeout: 336h
 config:
