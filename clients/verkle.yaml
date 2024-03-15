@@ -1,11 +1,11 @@
 
 consensus: # CL Clients
   lighthouse: 
-    image: "ethpandaops/lighthouse:verkle-trees-capella-2ffb8a9"
+    image: "ethpandaops/lighthouse:verkle-trees-capella"
   lodestar:
-    image: "ethpandaops/lodestar:g11tech-verge-815364b"
+    image: "ethpandaops/lodestar:g11tech-verge"
 
 execution: # EL Clients
   geth:
-    image: "ethpandaops/geth:gballet-transition-post-genesis-0301989"
+    image: "ethpandaops/geth:gballet-transition-post-genesis"
 

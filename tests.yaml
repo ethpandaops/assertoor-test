@@ -125,7 +125,7 @@ tests:
   - assertoor-tests/validator-slashing-test.yaml
 
 - id: "verkle-conversion"
-  schedule: false
+  schedule: true
   name: "Test verkle conversion"
   clients: clients/verkle.yaml
   kurtosis: kurtosis-config/verkle-conversion.yaml
