@@ -85,7 +85,6 @@ tasks:
 
     - name: run_task_matrix
       title: "Wait for activation of all deposited keys"
-      timeout: 336h
       configVars:
         matrixValues: "validatorPubkeys"
       config:
@@ -285,7 +284,7 @@ tasks:
         tasks:
         - name: run_task_matrix
           title: "Wait for validators to become exited"
-          timeout: 6h
+          timeout: 8h
           configVars:
             matrixValues: "| [.validatorPubkeys[0], .validatorPubkeys[1], .validatorPubkeys[4], .validatorPubkeys[5], .validatorPubkeys[8], .validatorPubkeys[9]]"
           config:
@@ -303,7 +302,6 @@ tasks:
                 validatorPubKey: "validatorPubkey"
         - name: run_task_matrix
           title: "Wait for full withdrawals"
-          timeout: 28h
           configVars:
             matrixValues: "| [.validatorPubkeys[0], .validatorPubkeys[1], .validatorPubkeys[4]]"
           config:
@@ -431,7 +429,6 @@ tasks:
                     expectBlsChanges: "| [{publicKey: .validatorPubkey, address: .depositorAddress}]"
             - name: run_tasks_concurrent
               title: "Wait for full withdrawals"
-              timeout: 28h
               config:
                 tasks:
                 - name: check_consensus_block_proposals
