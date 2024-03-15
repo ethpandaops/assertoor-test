@@ -258,9 +258,8 @@ jobs:
 
     - name: Assertoor Status Check
       id: test_result
-      uses: ethpandaops/assertoor-github-action@v0.0.1
+      uses: ethpandaops/assertoor-github-action@v1
       with:
-        assertoor_api_url: ""
         kurtosis_enclave_name: "assertoor-${{ github.run_id }}-${{ inputs.id }}"
 
     - name: Generate enclave dump
