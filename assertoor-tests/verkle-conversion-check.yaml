@@ -3,23 +3,33 @@ name: "Check verkle state conversion"
 
 tasks:
 - name: check_clients_are_healthy
-  title: "Check if at least one client is ready"
+  title: "Check if all clients are ready"
   timeout: 5m
   config:
-    minClientCount: 1
+    maxUnhealthyCount: 0
 
-- name: run_task_matrix
-  title: "Check verkle conversion state for all execution clients"
-  configVars:
-    matrixValues: "clientPairNames"
+- name: run_tasks_concurrent
+  title: "Check verkle conversion state & network aliveness"
   config:
-    runConcurrent: true
-    matrixVar: "clientPairName"
-    task:
-      name: check_execution_conversion_state
-      title: "Check verkle conversion state for ${clientPairName}"
+    tasks:
+    - name: check_clients_are_healthy
+      title: "Check if all clients are ready"
       config:
-        expectStarted: true
-        expectFinished: true
+        pollInterval: 30s
+        maxUnhealthyCount: 0
+        failOnCheckMiss: true
+    - name: run_task_matrix
+      title: "Check verkle conversion state for all execution clients"
       configVars:
-        clientPattern: "clientPairName"
+        matrixValues: "clientPairNames"
+      config:
+        runConcurrent: true
+        matrixVar: "clientPairName"
+        task:
+          name: check_execution_conversion_state
+          title: "Check verkle conversion state for ${clientPairName}"
+          config:
+            expectStarted: true
+            expectFinished: true
+          configVars:
+            clientPattern: "clientPairName"
