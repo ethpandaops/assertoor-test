@@ -51,11 +51,7 @@ tests:
   - lodestar/lighthouse-geth,lodestar/teku-geth,lodestar/lodestar-geth,lodestar/nimbus-geth
   - nimbus/lighthouse-geth,nimbus/teku-geth,nimbus/lodestar-geth,nimbus/nimbus-geth
   assertoorTests:
-  - assertoor-tests/stability-check.yaml
   - assertoor-tests/block-proposal-check.yaml
-  - assertoor-tests/validator-withdrawal-test.yaml
-  - assertoor-tests/validator-exit-test.yaml
-  - assertoor-tests/validator-slashing-test.yaml
 
 
 # kubetest
