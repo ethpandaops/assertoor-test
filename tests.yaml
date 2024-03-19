@@ -10,17 +10,18 @@ tests:
   worker: ubuntu-latest
   backend: docker
   clientPairs:
-  # CL: [lighthouse,prysm,teku,lodestar,nimbus]
+  # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
   # EL: [geth,besu,reth,erigon,nethermind]
-  - lodestar-geth,lighthouse-geth,nimbus-erigon
-  - nimbus-besu,teku-reth,teku-besu
-  - lodestar-erigon,nimbus-reth,prysm-reth
-  - lodestar-besu,lighthouse-reth,nimbus-nethermind
-  - lighthouse-erigon,teku-erigon,prysm-nethermind
-  - lodestar-nethermind,prysm-geth,teku-geth
-  - prysm-besu,lodestar-reth,lighthouse-nethermind
-  - lighthouse-besu,teku-nethermind,prysm-erigon
-  - nimbus-geth,lighthouse-geth,prysm-reth
+  - lighthouse-reth,lighthouse-besu,grandine-nethermind
+  - prysm-reth,lighthouse-erigon,teku-besu
+  - prysm-besu,lodestar-besu,nimbus-nethermind
+  - lodestar-geth,prysm-erigon,nimbus-besu
+  - lighthouse-geth,grandine-besu,nimbus-reth
+  - prysm-geth,prysm-nethermind,lodestar-reth
+  - lighthouse-nethermind,nimbus-erigon,teku-geth
+  - lodestar-erigon,teku-nethermind,grandine-reth
+  - teku-erigon,grandine-geth,lodestar-nethermind
+  - teku-reth,nimbus-geth,grandine-erigon
   assertoorTests:
   - assertoor-tests/stability-check.yaml
   - assertoor-tests/block-proposal-check.yaml

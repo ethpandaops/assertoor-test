@@ -11,6 +11,8 @@ consensus: # CL Clients
     image: "statusim/nimbus-eth2:amd64-latest"
   lodestar:
     image: "chainsafe/lodestar:latest"
+  grandine:
+    image: "ethpandaops/grandine:develop"
 
 execution: # EL Clients
   geth:
