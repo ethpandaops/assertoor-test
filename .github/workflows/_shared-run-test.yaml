@@ -248,7 +248,7 @@ jobs:
           kurtosis gateway &
         fi
 
-        kurtosis run github.com/kurtosis-tech/ethereum-package --enclave assertoor-${{ github.run_id }}-${{ inputs.id }} --args-file ./temp/test-network.yaml --image-download always --non-blocking-tasks --verbosity DETAILED
+        kurtosis run github.com/kurtosis-tech/ethereum-package@bbusa/default-deneb-genesis --enclave assertoor-${{ github.run_id }}-${{ inputs.id }} --args-file ./temp/test-network.yaml --image-download always --non-blocking-tasks --verbosity DETAILED
 
         enclave_dump=$(kurtosis enclave inspect assertoor-${{ github.run_id }}-${{ inputs.id }})
 
