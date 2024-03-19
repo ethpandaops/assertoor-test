@@ -12,15 +12,15 @@ tests:
   clientPairs:
   # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
   # EL: [geth,besu,reth,erigon,nethermind]
-  - lighthouse-reth,grandine-nethermind,lighthouse-besu
+  - lighthouse-reth,lighthouse-besu,grandine-nethermind
   - prysm-reth,lighthouse-erigon,teku-besu
   - prysm-besu,lodestar-besu,nimbus-nethermind
   - lodestar-geth,prysm-erigon,nimbus-besu
   - lighthouse-geth,grandine-besu,nimbus-reth
   - prysm-geth,prysm-nethermind,lodestar-reth
   - lighthouse-nethermind,nimbus-erigon,teku-geth
-  - lodestar-erigon,grandine-reth,teku-nethermind
-  - teku-erigon,grandine-geth,lodestar-nethermind
+  - lodestar-erigon,teku-nethermind,grandine-reth
+  - grandine-geth,teku-erigon,lodestar-nethermind
   - teku-reth,grandine-erigon,nimbus-geth
   assertoorTests:
   - assertoor-tests/stability-check.yaml
