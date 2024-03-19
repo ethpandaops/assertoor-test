@@ -9,6 +9,7 @@ consensus: # CL Clients
     image: "sigp/lighthouse:latest"
   nimbus:
     image: "statusim/nimbus-eth2:amd64-latest"
+    vc_image: "statusim/nimbus-validator-client:amd64-latest"
   lodestar:
     image: "chainsafe/lodestar:latest"
   grandine:

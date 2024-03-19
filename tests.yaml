@@ -45,13 +45,11 @@ tests:
   clientPairs:
   # CL: [lighthouse,prysm,teku,lodestar,nimbus]
   # EL: [geth,besu,reth,erigon,nethermind]
-  - lighthouse/teku-geth,teku/prysm-geth,lodestar/nimbus-geth
-  - prysm/teku-geth,prysm/lodestar-geth,lighthouse/nimbus-geth
-  - lodestar/prysm-geth,nimbus/lodestar-geth,teku/lodestar-geth
-  - nimbus/prysm-geth,lighthouse/prysm-geth,lodestar/teku-geth
-  - nimbus/lighthouse-geth,prysm/nimbus-geth,lighthouse/lodestar-geth
-  - teku/lighthouse-geth,prysm/lighthouse-geth,teku/nimbus-geth
-  - lodestar/lighthouse-geth,nimbus/teku-geth,lighthouse/teku-geth
+  - lighthouse/lighthouse-geth,lighthouse/teku-geth,lighthouse/lodestar-geth,lighthouse/nimbus-geth
+  - prysm/lighthouse-geth,prysm/teku-geth,prysm/lodestar-geth,prysm/nimbus-geth
+  - teku/lighthouse-geth,teku/teku-geth,teku/lodestar-geth,teku/nimbus-geth
+  - lodestar/lighthouse-geth,lodestar/teku-geth,lodestar/lodestar-geth,lodestar/nimbus-geth
+  - nimbus/lighthouse-geth,nimbus/teku-geth,nimbus/lodestar-geth,nimbus/nimbus-geth
   assertoorTests:
   - assertoor-tests/stability-check.yaml
   - assertoor-tests/block-proposal-check.yaml
