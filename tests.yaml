@@ -77,17 +77,25 @@ tests:
   - assertoor-tests/validator-slashing-test.yaml
 
 
-- id: "deneb-test"
+- id: "deneb-gen"
   schedule: false
-  name: "Test dencun clients"
-  clients: clients/deneb.yaml
-  kurtosis: kurtosis-config/deneb.yaml
+  name: "Test dencun genesis"
+  clients: clients/latest.yaml
+  kurtosis_branch: bbusa/default-deneb-genesis
+  kurtosis: kurtosis-config/deneb-gen.yaml
   worker: ubuntu-latest
   backend: docker
   clientPairs:
-  - lighthouse-geth,prysm-reth,lodestar-besu
-  - lighthouse-geth,teku-erigon,nimbus-reth
-  - lighthouse-besu,prysm-reth,teku-geth
+  - lighthouse-reth,lighthouse-besu,grandine-nethermind
+  - prysm-reth,lighthouse-erigon,teku-besu
+  - prysm-besu,lodestar-besu,nimbus-nethermind
+  - lodestar-geth,prysm-erigon,nimbus-besu
+  - lighthouse-geth,grandine-besu,nimbus-reth
+  - prysm-geth,prysm-nethermind,lodestar-reth
+  - lighthouse-nethermind,nimbus-erigon,teku-geth
+  - lodestar-erigon,teku-nethermind,grandine-reth
+  - grandine-geth,teku-erigon,lodestar-nethermind
+  - teku-reth,grandine-erigon,nimbus-geth
   assertoorTests:
   - assertoor-tests/stability-check.yaml
   - assertoor-tests/block-proposal-check.yaml
@@ -123,6 +131,7 @@ tests:
   schedule: true
   name: "Test verkle conversion"
   clients: clients/verkle.yaml
+  kurtosis_branch: bbusa/verkle-archive
   kurtosis: kurtosis-config/verkle-conversion.yaml
   worker: services-medium-shared
   backend: kubernetes

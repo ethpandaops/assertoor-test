@@ -11,6 +11,14 @@ on:
         description: 'Override client pairs to run this test with (eg. lighthouse-get,teku-besu)'
         default: ""
         type: string
+      overrideKurtosisConfig:
+        description: 'Override kurtosis config to run this test with (eg. kurtosis-config/default.yaml)'
+        default: ""
+        type: string
+      overrideKurtosisBranch:
+        description: 'Override kurtosis ethereum package branch to run this test with (eg. main)'
+        default: ""
+        type: string
 
 jobs:
   get_tests:
@@ -28,6 +36,8 @@ jobs:
         tests_file="tests.yaml"
         override_tests="${{ inputs.overrideTests }}"
         override_pairs="${{ inputs.overrideClientPairs }}"
+        override_kurtosis_config="${{ inputs.overrideKurtosisConfig }}"
+        override_kurtosis_branch="${{ inputs.overrideKurtosisBranch }}"
 
         test_configs="$(cat $tests_file | yq -o json | jq -c '.tests')"
 
@@ -49,6 +59,14 @@ jobs:
 
         if ! [ -z "$override_pairs" ]; then
           test_configs="$(echo "$test_configs" | jq -c "(.[]).clientPairs |= [\"$override_pairs\"]")"
+        fi
+
+        if ! [ -z "$override_kurtosis_config" ]; then
+          test_configs="$(echo "$test_configs" | jq -c "(.[]).kurtosis = \"$override_kurtosis_config\"")"
+        fi
+        
+        if ! [ -z "$override_kurtosis_branch" ]; then
+          test_configs="$(echo "$test_configs" | jq -c "(.[]).kurtosis_branch = \"$override_kurtosis_branch\"")"
         fi
 
         echo "test_configs<<EOF" >> $GITHUB_OUTPUT

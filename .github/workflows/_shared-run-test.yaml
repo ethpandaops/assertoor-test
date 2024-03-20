@@ -35,6 +35,10 @@ on:
         type: string
         description: "The kurtosis network config to use (default: kurtosis-config/default.yaml)."
         default: "kurtosis-config/default.yaml"
+      kurtosis_branch:
+        type: string
+        description: "The branch name for the kurtosis ethereum package to use (default: )."
+        default: ""
       assertoor_tests:
         type: string
         description: "The list of assertoor test files to run."
@@ -248,7 +252,12 @@ jobs:
           kurtosis gateway &
         fi
 
-        kurtosis run github.com/kurtosis-tech/ethereum-package@bbusa/default-deneb-genesis --enclave assertoor-${{ github.run_id }}-${{ inputs.id }} --args-file ./temp/test-network.yaml --image-download always --non-blocking-tasks --verbosity DETAILED
+        kurtosis_package="github.com/kurtosis-tech/ethereum-package"
+        if [ ! -z "${{ inputs.kurtosis_branch }}" ]; then
+          kurtosis_package="${kurtosis_package}@${{ inputs.kurtosis_branch }}"
+        fi
+
+        kurtosis run $kurtosis_package --enclave assertoor-${{ github.run_id }}-${{ inputs.id }} --args-file ./temp/test-network.yaml --image-download always --non-blocking-tasks --verbosity DETAILED
 
         enclave_dump=$(kurtosis enclave inspect assertoor-${{ github.run_id }}-${{ inputs.id }})
 

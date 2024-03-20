@@ -20,6 +20,7 @@ jobs:
       name: ${{ steps.config.outputs.name }}
       clients: ${{ steps.config.outputs.clients }}
       kurtosis: ${{ steps.config.outputs.kurtosis }}
+      kurtosis_branch: ${{ steps.config.outputs.kurtosis_branch }}
       worker: ${{ steps.config.outputs.worker }}
       backend: ${{ steps.config.outputs.backend }}
       pairs: ${{ steps.config.outputs.pairs }}
@@ -43,6 +44,7 @@ jobs:
         name="$(echo "$testcfg" | jq -r .name)"
         clients="$(echo "$testcfg" | jq -r .clients)"
         kurtosis="$(echo "$testcfg" | jq -r .kurtosis)"
+        kurtosis_branch="$(echo "$testcfg" | jq -r .kurtosis_branch)"
         worker="$(echo "$testcfg" | jq -c .worker)"
         backend="$(echo "$testcfg" | jq -r .backend)"
         kubernetes_cluster="$(echo "$testcfg" | jq -r .kubernetes.cluster)"
@@ -58,6 +60,8 @@ jobs:
         echo "clients=$(echo "$clients")" >> $GITHUB_OUTPUT
         echo "Kurtosis yaml: $kurtosis"
         echo "kurtosis=$(echo "$kurtosis")" >> $GITHUB_OUTPUT
+        echo "Kurtosis package branch: $kurtosis_branch"
+        echo "kurtosis_branch=$(echo "$kurtosis_branch")" >> $GITHUB_OUTPUT
         echo "Worker: $worker"
         echo "worker=$(echo "$worker")" >> $GITHUB_OUTPUT
         echo "Backend: $backend"
@@ -118,6 +122,7 @@ jobs:
       pairs: ${{ matrix.pairs }}
       worker: ${{ needs.get_test.outputs.worker }}
       kurtosis: ${{ needs.get_test.outputs.kurtosis }}
+      kurtosis_branch: ${{ needs.get_test.outputs.kurtosis_branch }}
       backend: ${{ needs.get_test.outputs.backend }}
       kubeCluster: ${{ needs.get_test.outputs.kubernetes_cluster }}
       kubeStorageClass: ${{ needs.get_test.outputs.kubernetes_storageclass }}
