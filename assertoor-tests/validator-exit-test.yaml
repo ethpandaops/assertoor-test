@@ -11,6 +11,11 @@ tasks:
   timeout: 5m
   config:
     minClientCount: 1
+- name: check_consensus_slot_range
+  title: "Wait for epoch >= 1"
+  timeout: 1h  # 1 epochs = ~0.12h
+  config:
+    minEpochNumber: 1
 
 - name: run_task_background
   title: "Check if all clients propose blocks with voluntary exits"

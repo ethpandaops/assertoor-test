@@ -11,6 +11,11 @@ tasks:
   timeout: 5m
   config:
     minClientCount: 1
+- name: check_consensus_slot_range
+  title: "Wait for epoch >= 4"
+  timeout: 1h  # 4 epochs = ~0.5h
+  config:
+    minEpochNumber: 4
 
 # check if all validators propose blocks with attestation slashings
 - name: run_task_background
