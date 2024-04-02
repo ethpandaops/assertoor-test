@@ -7,6 +7,10 @@ on:
         type: string
         description: "The test identifier."
         required: true
+      name:
+        type: string
+        description: "The test name."
+        required: true
       pairs:
         type: string
         description: "The client pairs to use (format: consensus1-execution1,consensus2-execution2,...)."
@@ -43,10 +47,17 @@ on:
         type: string
         description: "The list of assertoor test files to run."
         required: true
+      send_notification:
+        type: string
+        description: "Send discord notification on test failure (default: false)."
+        default: "false"
     secrets:
       KUBECONFIG:
         description: 'Kubernetes config'
         required: true
+      DISCORD_HOOK:
+        description: 'Discord hook'
+        required: false
 
 jobs:
   run_test:
@@ -69,6 +80,7 @@ jobs:
         fi
     - name: "Generate kurtosis config with client pairs: ${{ inputs.pairs }}"
       shell: bash
+      id: clients
       run: |
         clients_file="${{ inputs.clients }}"
         kurtosis_file="${{ inputs.kurtosis }}"
@@ -76,6 +88,8 @@ jobs:
 
         mkdir -p ./temp
         touch ./temp/participants.yaml
+
+        echo "start_time=$(date +%s)" >> $GITHUB_OUTPUT
 
         if [ ! -z "$pairs" ]; then
           resolve_image() {
@@ -96,6 +110,8 @@ jobs:
           }
 
           echo "participants:" >> ./temp/participants.yaml
+          touch ./temp/clients_summary.txt
+
           client_idx=0
           for pair in $(echo $pairs | tr "," "\n")
           do
@@ -181,6 +197,12 @@ jobs:
               echo "VC: $vc_type  ($vc_image)"
             fi
             echo "EL: $el_type  ($el_image)"
+
+            participant="${el_type}-${cl_type}"
+            if [ ! -z "$vc_type" ]; then
+              participant="${participant}-${vc_type}"
+            fi
+            echo "participant $client_idx: $participant" >> ./temp/clients_summary.txt
           done
         fi
 
@@ -299,6 +321,53 @@ jobs:
       run: |
         kurtosis enclave rm -f assertoor-${{ github.run_id }}-${{ inputs.id }} || true
     
+    - name: Send discord notification (on failure)
+      if: ${{ steps.test_result.outputs.result == 'failure' && inputs.send_notification == 'true' }}
+      shell: bash
+      run: |
+        if [ -z "$DISCORD_HOOK" ]; then
+          echo "discord hook missing"
+          exit 1
+        fi
+
+        hookjson="{}"
+        hookjson=$(echo "$hookjson" | jq -c ".username|=$(echo -n "Assertoor Test Notification" | jq -R -s '.')")
+        #hookjson=$(echo "$hookjson" | jq -c ".username|=$(echo -n "Assertoor Test Notification" | jq -R -s '.')")
+
+        touch ./temp/notification_text.txt
+        echo "test id: ${{ inputs.id }}" >> ./temp/notification_text.txt
+
+        start_time="${{ steps.clients.outputs.start_time }}"
+        end_time="$(date +%s)"
+        runtime=$((end_time-start_time))
+        echo "run time: $(printf '%02dh:%02dm:%02ds\n' $((runtime/3600)) $((runtime%3600/60)) $((runtime%60)))" >> ./temp/notification_text.txt
+
+        cat ./temp/clients_summary.txt >> ./temp/notification_text.txt
+
+        echo "" > ./temp/notification_text.txt
+        test_status=$(
+        cat <<"EOF"
+        ${{ steps.test_result.outputs.test_overview }}
+        EOF
+        )
+        echo "$test_status" > ./temp/notification_text.txt
+
+        msgjson="{}"
+        msgjson=$(echo "$msgjson" | jq -c ".title|=$(echo -n "Test Failure: ${{ inputs.name }}" | jq -R -s '.')")
+        msgjson=$(echo "$msgjson" | jq -c ".description|=$(cat ./temp/notification_text.txt | jq -R -s '.')")
+
+        jobs=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id}}/attempts/${{ github.run_attempt }}/jobs)
+        job_id=$(echo $jobs | jq -r '.jobs[] | select(.runner_name=="${{ runner.name }}") | .id')
+
+        msgjson=$(echo "$msgjson" | jq -c ".url|=$(echo -n "https://github.com/${{ github.repository_owner }}/${{ github.repository }}/actions/runs/${{ github.run_id}}/job/${job_id}" | jq -R -s '.')")
+        hookjson=$(echo "$hookjson" | jq -c ".embeds|=[${msgjson}]")
+        echo $hookjson | jq
+
+        curl -X POST -H 'Content-Type: application/json' -d "$hookjson" $DISCORD_HOOK
+      env:
+        DISCORD_HOOK: ${{ secrets.DISCORD_HOOK }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Return test result
       shell: bash
       run: |

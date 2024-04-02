@@ -6,11 +6,18 @@ on:
         type: string
         description: "The test configuration in json format."
         required: true
+      send_notification:
+        type: string
+        description: "Send discord notification on test failure (default: false)."
+        default: "false"
     secrets:
       RANCHER_TOKEN:
         description: "The rancher token to login to the rancher server."
       RANCHER_URL:
         description: "The rancher url to login to the rancher server."
+      DISCORD_HOOK:
+        description: 'Discord hook'
+        required: false
 jobs:
   get_test:
     name: "Prepare Test"
@@ -119,6 +126,7 @@ jobs:
     uses: ./.github/workflows/_shared-run-test.yaml
     with:
       id: "${{ needs.get_test.outputs.id }}-${{ matrix.index }}"
+      name: "${{ needs.get_test.outputs.name }}"
       pairs: ${{ matrix.pairs }}
       worker: ${{ needs.get_test.outputs.worker }}
       kurtosis: ${{ needs.get_test.outputs.kurtosis }}
@@ -128,5 +136,7 @@ jobs:
       kubeStorageClass: ${{ needs.get_test.outputs.kubernetes_storageclass }}
       clients: ${{ needs.get_test.outputs.clients }}
       assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
+      send_notification: ${{ inputs.send_notification }}
     secrets:
       KUBECONFIG: ${{ needs.get_test.outputs.kubeconfig }}
+      DISCORD_HOOK: ${{ secrets.DISCORD_HOOK }}

@@ -142,3 +142,27 @@ tests:
   - lodestar-geth,lodestar-geth
   assertoorTests:
   - assertoor-tests/verkle-conversion-check.yaml
+
+# Test1
+- id: "proposals"
+  schedule: false
+  name: "Test latest clients (proposals only)"
+  clients: clients/latest.yaml
+  kurtosis: kurtosis-config/default.yaml
+  worker: ubuntu-latest
+  backend: docker
+  clientPairs:
+  # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
+  # EL: [geth,besu,reth,erigon,nethermind]
+  - lighthouse-reth,lighthouse-besu,grandine-nethermind
+  #- prysm-reth,lighthouse-erigon,teku-besu
+  #- prysm-besu,lodestar-besu,nimbus-nethermind
+  #- lodestar-geth,prysm-erigon,nimbus-besu
+  #- lighthouse-geth,grandine-besu,nimbus-reth
+  #- prysm-geth,prysm-nethermind,lodestar-reth
+  #- lighthouse-nethermind,nimbus-erigon,teku-geth
+  #- lodestar-erigon,teku-nethermind,grandine-reth
+  #- grandine-geth,teku-erigon,lodestar-nethermind
+  #- teku-reth,grandine-erigon,nimbus-geth
+  assertoorTests:
+  - assertoor-tests/block-proposal-check.yaml
