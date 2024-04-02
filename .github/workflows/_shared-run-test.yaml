@@ -51,12 +51,19 @@ on:
         type: string
         description: "Send discord notification on test failure (default: false)."
         default: "false"
+      use_chatgpt:
+        type: string
+        description: "Use ChatGPT to summarize error (default: false)."
+        default: "false"
     secrets:
       KUBECONFIG:
         description: 'Kubernetes config'
         required: true
       DISCORD_HOOK:
         description: 'Discord hook'
+        required: false
+      CHATGPT_KEY:
+        description: 'ChatGPT Key'
         required: false
 
 jobs:
@@ -321,8 +328,68 @@ jobs:
       run: |
         kurtosis enclave rm -f assertoor-${{ github.run_id }}-${{ inputs.id }} || true
     
+    - name: Generate failure summary via ChatGPT (on failure)
+      if: ${{ steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt == 'true' }}
+      id: chatgpt
+      shell: bash
+      run: |
+        test_status=$(
+        cat <<"EOF"
+        ${{ steps.test_result.outputs.test_overview }}
+        EOF
+        )
+        failed_test_status=$(
+        cat <<"EOF"
+        ${{ steps.test_result.outputs.failed_test_details }}
+        EOF
+        )
+
+        echo "$test_status" >> ./temp/chatgpt_query.txt
+        echo "" >> ./temp/chatgpt_query.txt
+        echo "Failed Test Task Status:" >> ./temp/chatgpt_query.txt
+        echo "$failed_test_status" >> ./temp/chatgpt_query.txt
+        echo "" >> ./temp/chatgpt_query.txt
+        tail -n 200 ./temp/dump/assertoor--*/output.log >> ./temp/chatgpt_query.txt
+
+        query_text="$(cat ./temp/chatgpt_query.txt)"
+
+        export QUERY_TEXT=$(echo "$query_text" | jq -R -s '.')
+        query_json=$(
+        cat <<"EOF" | envsubst | jq -c
+        {
+          "model": "gpt-4-turbo-preview",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You will receive the test status & the last 100 lines of logs from the ethereum testnet testing tool assertoor. The status & logs you get are from failed tests. Please find the error, which client caused it and try summarizing what went wrong for a first technical insight. Assume that assertoor and the test are working fine, so it is probably a client causing problems. Your summary should not exceed 700 characters. Use easy language with technical details like client names."
+            },
+            {
+              "role": "user",
+              "content": $QUERY_TEXT
+            }
+          ]
+        }
+        EOF
+        )
+
+        result=$(curl https://api.openai.com/v1/chat/completions \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $CHATGPT_KEY" \
+          -d "$query_json"
+        )
+
+        echo "ChatGPT Summary:"
+        echo $result | jq -r ".choices[0].message.content"
+
+        echo "summary<<EOF" >> $GITHUB_OUTPUT
+        echo $result | jq -r ".choices[0].message.content" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+      env:
+        CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
+
     - name: Send discord notification (on failure)
-      # if: ${{ steps.test_result.outputs.result == 'failure' && inputs.send_notification == 'true' }}
+      if: ${{ (failure() || steps.test_result.outputs.result == 'failure') && inputs.send_notification == 'true' }}
       shell: bash
       run: |
         if [ -z "$DISCORD_HOOK" ]; then
@@ -344,15 +411,30 @@ jobs:
         cat ./temp/clients_summary.txt >> ./temp/notification_text.txt
         echo "" >> ./temp/notification_text.txt
         
+        if [ -z "${{ steps.test_result.outputs.result }}" ]; then
+          echo "**Test Status:**" >> ./temp/notification_text.txt
+          echo "kurtosis testnet failed during startup" >> ./temp/notification_text.txt
+        else
         test_status=$(
         cat <<"EOF"
         ${{ steps.test_result.outputs.test_overview }}
         EOF
         )
-        echo "**Test Status:**" >> ./temp/notification_text.txt
-        echo '```ansi'  >> ./temp/notification_text.txt
-        echo "$test_status" >> ./temp/notification_text.txt
-        echo '```'  >> ./temp/notification_text.txt
+          echo "**Test Status:**" >> ./temp/notification_text.txt
+          echo '```ansi'  >> ./temp/notification_text.txt
+          echo "$test_status" >> ./temp/notification_text.txt
+          echo '```'  >> ./temp/notification_text.txt
+        fi
+
+        chatgpt_summary=$(
+        cat <<"EOF"
+        ${{ steps.chatgpt.outputs.summary }}
+        EOF
+        )
+        if ! [ -z "$chatgpt_summary" ]; then
+          echo "**Summary:**" >> ./temp/notification_text.txt
+          echo "$chatgpt_summary" >> ./temp/notification_text.txt
+        fi
 
         jobs=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id}}/attempts/${{ github.run_attempt }}/jobs")
         job_id=$(echo $jobs | jq -r '.jobs[] | select(.runner_name=="${{ runner.name }}") | .id')
@@ -389,6 +471,11 @@ jobs:
         ${{ steps.test_result.outputs.failed_test_details }}
         EOF
         )
+        chatgpt_summary=$(
+        cat <<"EOF"
+        ${{ steps.chatgpt.outputs.summary }}
+        EOF
+        )
 
         echo "Test Result:  $test_result"
         echo "$test_status"
@@ -397,6 +484,13 @@ jobs:
           echo ""
           echo "Failed Test Task Status:"
           echo "$failed_test_status"
+
+          if ! [ -z "$chatgpt_summary" ]; then
+            echo ""
+            echo "Failure summary (ChatGPT):"
+            echo "$chatgpt_summary"
+          fi
+
 
           echo ""
           echo "See 'Await test completion' task for detailed logs about this failure!"

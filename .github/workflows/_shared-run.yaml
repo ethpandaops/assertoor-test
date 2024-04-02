@@ -10,6 +10,10 @@ on:
         type: string
         description: "Send discord notification on test failure (default: false)."
         default: "false"
+      use_chatgpt:
+        type: string
+        description: "Use ChatGPT to generate a summary of failed tests (default: false)."
+        default: "false"
     secrets:
       RANCHER_TOKEN:
         description: "The rancher token to login to the rancher server."
@@ -17,6 +21,9 @@ on:
         description: "The rancher url to login to the rancher server."
       DISCORD_HOOK:
         description: 'Discord hook'
+        required: false
+      CHATGPT_KEY:
+        description: 'ChatGPT Key'
         required: false
 jobs:
   get_test:
@@ -137,7 +144,9 @@ jobs:
       clients: ${{ needs.get_test.outputs.clients }}
       assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
       send_notification: ${{ inputs.send_notification }}
+      use_chatgpt: ${{ inputs.use_chatgpt }}
     secrets:
       KUBECONFIG: ${{ needs.get_test.outputs.kubeconfig }}
       DISCORD_HOOK: ${{ secrets.DISCORD_HOOK }}
+      CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
 

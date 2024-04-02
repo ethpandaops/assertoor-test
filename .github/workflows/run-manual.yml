@@ -84,7 +84,6 @@ jobs:
         config: ${{ fromJson(needs.get_tests.outputs.test_configs) }}
     with:
       config: ${{ toJSON(matrix.config) }}
-      send_notification: "true"
     secrets:
       RANCHER_URL: ${{ secrets.RANCHER_URL }}
       RANCHER_TOKEN: ${{ secrets.RANCHER_TOKEN }}

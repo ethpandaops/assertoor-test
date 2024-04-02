@@ -41,10 +41,12 @@ jobs:
     with:
       config: ${{ toJSON(matrix.config) }}
       send_notification: "true"
+      use_chatgpt: "true"
     secrets:
       RANCHER_URL: ${{ secrets.RANCHER_URL }}
       RANCHER_TOKEN: ${{ secrets.RANCHER_TOKEN }}
       DISCORD_HOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
   
   notify:
     name: Discord Notification
