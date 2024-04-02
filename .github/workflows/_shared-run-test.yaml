@@ -112,7 +112,7 @@ jobs:
               vc_type=$(echo "$cl_type" | sed 's/^\(.*\)\/\(.*\)$/\2/')
               cl_type=$(echo "$cl_type" | sed 's/^\(.*\)\/\(.*\)$/\1/')
             else
-              vc_type=$cl_type
+              vc_type=""
             fi
 
             if [ "$cl_type" == "random" ]; then
@@ -132,12 +132,16 @@ jobs:
             fi
             cl_image=$(resolve_image "$cl_image")
 
-            vc_image="$(cat $clients_file | yq ".consensus.${vc_type}.vc_image // .consensus.${vc_type}.image")"
-            if [ "$vc_image" == "null" ]; then
-              echo "Unknown VC client type: $vc_type"
-              exit 1
+            if [ -z "$vc_type" ]; then
+              vc_image=""
+            else
+              vc_image="$(cat $clients_file | yq ".consensus.${vc_type}.vc_image // .consensus.${vc_type}.image")"
+              if [ "$vc_image" == "null" ]; then
+                echo "Unknown VC client type: $vc_type"
+                exit 1
+              fi
+              vc_image=$(resolve_image "$vc_image")
             fi
-            vc_image=$(resolve_image "$vc_image")
 
             el_image="$(cat $clients_file | yq ".execution.${el_type}.image")"
             if [ "$el_image" == "null" ]; then
@@ -160,18 +164,22 @@ jobs:
               echo "    cl_extra_params: $cl_extra_params" >> ./temp/participants.yaml
             fi
 
-            echo "    vc_type: $vc_type" >> ./temp/participants.yaml
-            echo "    vc_image: $vc_image" >> ./temp/participants.yaml
-            vc_extra_params="$(cat $clients_file | yq ".consensus.${cl_type}.vc_params")"
-            if [ "$vc_extra_params" != "null" ]; then
-              echo "    vc_extra_params: $vc_extra_params" >> ./temp/participants.yaml
+            if [ ! -z "$vc_type" ]; then
+              echo "    vc_type: $vc_type" >> ./temp/participants.yaml
+              echo "    vc_image: $vc_image" >> ./temp/participants.yaml
+              vc_extra_params="$(cat $clients_file | yq ".consensus.${cl_type}.vc_params")"
+              if [ "$vc_extra_params" != "null" ]; then
+                echo "    vc_extra_params: $vc_extra_params" >> ./temp/participants.yaml
+              fi
             fi
 
             echo "    count: 1" >> ./temp/participants.yaml
 
             echo "Client $client_idx"
             echo "CL: $cl_type  ($cl_image)"
-            echo "VC: $vc_type  ($vc_image)"
+            if [ ! -z "$vc_type" ]; then
+              echo "VC: $vc_type  ($vc_image)"
+            fi
             echo "EL: $el_type  ($el_image)"
           done
         fi
