@@ -349,7 +349,7 @@ jobs:
         echo "Failed Test Task Status:" >> ./temp/chatgpt_query.txt
         echo "$failed_test_status" >> ./temp/chatgpt_query.txt
         echo "" >> ./temp/chatgpt_query.txt
-        tail -n 200 ./temp/dump/assertoor--*/output.log >> ./temp/chatgpt_query.txt
+        tail -n 100 ./temp/dump/assertoor-*/assertoor--*/output.log >> ./temp/chatgpt_query.txt
 
         query_text="$(cat ./temp/chatgpt_query.txt)"
 
@@ -411,8 +411,8 @@ jobs:
         cat ./temp/clients_summary.txt >> ./temp/notification_text.txt
         echo "" >> ./temp/notification_text.txt
         
+        echo "**Failed Test:**" >> ./temp/notification_text.txt
         if [ -z "${{ steps.test_result.outputs.result }}" ]; then
-          echo "**Test Status:**" >> ./temp/notification_text.txt
           echo "kurtosis testnet failed during startup" >> ./temp/notification_text.txt
         else
         test_status=$(
@@ -420,9 +420,8 @@ jobs:
         ${{ steps.test_result.outputs.test_overview }}
         EOF
         )
-          echo "**Test Status:**" >> ./temp/notification_text.txt
           echo '```ansi'  >> ./temp/notification_text.txt
-          echo "$test_status" >> ./temp/notification_text.txt
+          echo "$test_status" | grep "failure" >> ./temp/notification_text.txt
           echo '```'  >> ./temp/notification_text.txt
         fi
 
@@ -432,7 +431,7 @@ jobs:
         EOF
         )
         if ! [ -z "$chatgpt_summary" ]; then
-          echo "**Summary:**" >> ./temp/notification_text.txt
+          echo "**Summary: (ChatGPT)**" >> ./temp/notification_text.txt
           echo "$chatgpt_summary" >> ./temp/notification_text.txt
         fi
 
