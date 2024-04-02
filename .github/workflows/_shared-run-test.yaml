@@ -361,7 +361,7 @@ jobs:
           "messages": [
             {
               "role": "system",
-              "content": "You will receive the test status & the last 100 lines of logs from the ethereum testnet testing tool assertoor. The status & logs you get are from failed tests. Please find the error, which client caused it and try summarizing what went wrong for a first technical insight. Assume that assertoor and the test are working fine, so it is probably a client causing problems. Your summary should not exceed 700 characters. Use easy language with technical details like client names."
+              "content": "You will receive the test status & the last 100 lines of logs from the ethereum testnet testing tool assertoor. The status & logs you get are from failed tests. Please find the error, which client caused it and try summarizing what went wrong for a first technical insight. Assume that assertoor and the test are working fine, so it is probably a client causing problems. Your summary should be around 400 characters and may not exceed 700 characters. Use easy language with technical details like client names."
             },
             {
               "role": "user",
