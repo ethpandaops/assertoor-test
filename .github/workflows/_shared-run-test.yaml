@@ -202,7 +202,7 @@ jobs:
             if [ ! -z "$vc_type" ]; then
               participant="${participant}-${vc_type}"
             fi
-            echo "participant $client_idx: $participant" >> ./temp/clients_summary.txt
+            echo "pair $client_idx: $participant" >> ./temp/clients_summary.txt
           done
         fi
 
@@ -322,7 +322,7 @@ jobs:
         kurtosis enclave rm -f assertoor-${{ github.run_id }}-${{ inputs.id }} || true
     
     - name: Send discord notification (on failure)
-      if: ${{ steps.test_result.outputs.result == 'failure' && inputs.send_notification == 'true' }}
+      # if: ${{ steps.test_result.outputs.result == 'failure' && inputs.send_notification == 'true' }}
       shell: bash
       run: |
         if [ -z "$DISCORD_HOOK" ]; then
@@ -330,36 +330,43 @@ jobs:
           exit 1
         fi
 
-        hookjson="{}"
-        hookjson=$(echo "$hookjson" | jq -c ".username|=$(echo -n "Assertoor Test Notification" | jq -R -s '.')")
-        #hookjson=$(echo "$hookjson" | jq -c ".username|=$(echo -n "Assertoor Test Notification" | jq -R -s '.')")
-
         touch ./temp/notification_text.txt
-        echo "test id: ${{ inputs.id }}" >> ./temp/notification_text.txt
+        echo "**Test ID:** ${{ inputs.id }}" >> ./temp/notification_text.txt
+        echo "**Name:** ${{ inputs.name }}" >> ./temp/notification_text.txt
+        echo "**Status:** ${{ steps.test_result.outputs.result }}" >> ./temp/notification_text.txt
 
         start_time="${{ steps.clients.outputs.start_time }}"
         end_time="$(date +%s)"
-        runtime=$((end_time-start_time))
-        echo "run time: $(printf '%02dh:%02dm:%02ds\n' $((runtime/3600)) $((runtime%3600/60)) $((runtime%60)))" >> ./temp/notification_text.txt
+        runtime="$(expr $end_time - $start_time)"
+        echo "**Run Time:** $(printf '%02dh:%02dm:%02ds\n' $((runtime/3600)) $((runtime%3600/60)) $((runtime%60)))" >> ./temp/notification_text.txt
 
+        echo "**Clients:**" >> ./temp/notification_text.txt
         cat ./temp/clients_summary.txt >> ./temp/notification_text.txt
-
-        echo "" > ./temp/notification_text.txt
+        echo "" >> ./temp/notification_text.txt
+        
         test_status=$(
         cat <<"EOF"
         ${{ steps.test_result.outputs.test_overview }}
         EOF
         )
-        echo "$test_status" > ./temp/notification_text.txt
+        echo "**Test Status:**" >> ./temp/notification_text.txt
+        echo '```ansi'  >> ./temp/notification_text.txt
+        echo "$test_status" >> ./temp/notification_text.txt
+        echo '```'  >> ./temp/notification_text.txt
+
+        jobs=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id}}/attempts/${{ github.run_attempt }}/jobs")
+        job_id=$(echo $jobs | jq -r '.jobs[] | select(.runner_name=="${{ runner.name }}") | .id')
+        job_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}/job/${job_id}"
 
         msgjson="{}"
-        msgjson=$(echo "$msgjson" | jq -c ".title|=$(echo -n "Test Failure: ${{ inputs.name }}" | jq -R -s '.')")
+        msgjson=$(echo "$msgjson" | jq -c ".title|=$(echo -n "Assertoor Test Failed: ${{ inputs.id }}" | jq -R -s '.')")
+        msgjson=$(echo "$msgjson" | jq -c ".color|=15083560")
+        msgjson=$(echo "$msgjson" | jq -c ".url|=$(echo -n "$job_url" | jq -R -s '.')")
         msgjson=$(echo "$msgjson" | jq -c ".description|=$(cat ./temp/notification_text.txt | jq -R -s '.')")
 
-        jobs=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id}}/attempts/${{ github.run_attempt }}/jobs)
-        job_id=$(echo $jobs | jq -r '.jobs[] | select(.runner_name=="${{ runner.name }}") | .id')
-
-        msgjson=$(echo "$msgjson" | jq -c ".url|=$(echo -n "https://github.com/${{ github.repository_owner }}/${{ github.repository }}/actions/runs/${{ github.run_id}}/job/${job_id}" | jq -R -s '.')")
+        hookjson="{}"
+        hookjson=$(echo "$hookjson" | jq -c ".username|=$(echo -n "Assertoor Test Notification" | jq -R -s '.')")
+        hookjson=$(echo "$hookjson" | jq -c ".avatar_url|=$(echo -n "https://raw.githubusercontent.com/ethpandaops/assertoor/master/.github/resources/assertoor.png" | jq -R -s '.')")
         hookjson=$(echo "$hookjson" | jq -c ".embeds|=[${msgjson}]")
         echo $hookjson | jq
 
@@ -397,3 +404,4 @@ jobs:
 
           exit 1 # fail action
         fi
+

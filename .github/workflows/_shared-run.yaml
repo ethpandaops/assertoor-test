@@ -140,3 +140,4 @@ jobs:
     secrets:
       KUBECONFIG: ${{ needs.get_test.outputs.kubeconfig }}
       DISCORD_HOOK: ${{ secrets.DISCORD_HOOK }}
+
