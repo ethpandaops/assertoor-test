@@ -11,6 +11,11 @@ tasks:
   timeout: 5m
   config:
     minClientCount: 1
+- name: check_consensus_slot_range
+  title: "Wait for slot >= 10"
+  timeout: 10m
+  config:
+    minSlotNumber: 10
 
 # check if all validators propose blocks with proposer slashings
 - name: run_task_background
