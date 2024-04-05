@@ -39,7 +39,7 @@ tests:
   schedule: false
   name: "Test validator client combinations"
   clients: clients/latest-dev.yaml
-  kurtosis: kurtosis-config/default.yaml
+  kurtosis: kurtosis-config/default_without_snooper.yaml
   worker: ubuntu-latest
   backend: docker
   clientPairs:
