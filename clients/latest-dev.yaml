@@ -1,0 +1,30 @@
+
+consensus: # CL Clients
+  teku: 
+    image: "consensys/teku:develop"
+  prysm:
+    image: "gcr.io/prysmaticlabs/prysm/beacon-chain:latest"
+    vc_image: "gcr.io/prysmaticlabs/prysm/validator:latest"
+  lighthouse: 
+    image: "sigp/lighthouse:latest-unstable"
+  nimbus:
+    image: "ethpandaops/nimbus-eth2:unstable"
+    vc_image: "ethpandaops/nimbus-validator-client:unstable"
+  lodestar:
+    image: "chainsafe/lodestar:next"
+  grandine:
+    image: "ethpandaops/grandine:develop"
+
+execution: # EL Clients
+  geth:
+    image: "ethereum/client-go:latest"
+  nethermind: 
+    image: "nethermind/nethermind:master"
+    params: ["--TxPool.BlobsSupport", "InMemory"]
+  erigon:
+    image: "thorax/erigon:devel"
+  besu:
+    image: "ethpandaops/besu::^main-[0-9a-f]{7}$"
+  reth:
+    image: "ethpandaops/reth:main"
+

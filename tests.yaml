@@ -5,7 +5,7 @@ tests:
 - id: "latest-releases"
   schedule: true
   name: "Test latest clients"
-  clients: clients/latest.yaml
+  clients: clients/latest-stable.yaml
   kurtosis: kurtosis-config/default.yaml
   worker: ubuntu-latest
   backend: docker
@@ -38,7 +38,7 @@ tests:
 - id: "vc-compatibility"
   schedule: false
   name: "Test validator client combinations"
-  clients: clients/latest.yaml
+  clients: clients/latest-dev.yaml
   kurtosis: kurtosis-config/default.yaml
   worker: ubuntu-latest
   backend: docker
@@ -59,7 +59,7 @@ tests:
 - id: "kubetest"
   schedule: false
   name: "Kubernetes Test"
-  clients: clients/latest.yaml
+  clients: clients/latest-stable.yaml
   kurtosis: kurtosis-config/default.yaml
   worker: ubuntu-latest
   backend: kubernetes
@@ -81,7 +81,7 @@ tests:
 - id: "deneb-gen"
   schedule: false
   name: "Test dencun genesis"
-  clients: clients/latest.yaml
+  clients: clients/latest-stable.yaml
   kurtosis_branch: bbusa/default-deneb-genesis
   kurtosis: kurtosis-config/deneb-gen.yaml
   worker: ubuntu-latest
@@ -148,7 +148,7 @@ tests:
 - id: "proposals"
   schedule: false
   name: "Test latest clients (proposals only)"
-  clients: clients/latest.yaml
+  clients: clients/latest-stable.yaml
   kurtosis: kurtosis-config/default.yaml
   worker: ubuntu-latest
   backend: docker
