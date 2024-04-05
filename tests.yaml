@@ -2,7 +2,7 @@
 tests:
 
 # Test1
-- id: "test1"
+- id: "latest-releases"
   schedule: true
   name: "Test latest clients"
   clients: clients/latest.yaml
@@ -35,7 +35,7 @@ tests:
 
 
 # Check validator client combinations
-- id: "vc-test"
+- id: "vc-compatibility"
   schedule: false
   name: "Test validator client combinations"
   clients: clients/latest.yaml
@@ -43,13 +43,14 @@ tests:
   worker: ubuntu-latest
   backend: docker
   clientPairs:
-  # CL: [lighthouse,prysm,teku,lodestar,nimbus]
+  # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
   # EL: [geth,besu,reth,erigon,nethermind]
-  - lighthouse/lighthouse-geth,lighthouse/teku-geth,lighthouse/lodestar-geth,lighthouse/nimbus-geth
-  - prysm/lighthouse-geth,prysm/teku-geth,prysm/lodestar-geth,prysm/nimbus-geth
-  - teku/lighthouse-geth,teku/teku-geth,teku/lodestar-geth,teku/nimbus-geth
-  - lodestar/lighthouse-geth,lodestar/teku-geth,lodestar/lodestar-geth,lodestar/nimbus-geth
-  - nimbus/lighthouse-geth,nimbus/teku-geth,nimbus/lodestar-geth,nimbus/nimbus-geth
+  - lighthouse/lighthouse-geth,lighthouse/prysm-geth,lighthouse/teku-geth,lighthouse/lodestar-geth,lighthouse/nimbus-geth
+  - prysm/lighthouse-geth,prysm/prysm-geth,prysm/teku-geth,prysm/lodestar-geth,prysm/nimbus-geth
+  - teku/lighthouse-geth,teku/prysm-geth,teku/teku-geth,teku/lodestar-geth,teku/nimbus-geth
+  - lodestar/lighthouse-geth,lodestar/prysm-geth,lodestar/teku-geth,lodestar/lodestar-geth,lodestar/nimbus-geth
+  - nimbus/lighthouse-geth,nimbus/prysm-geth,nimbus/teku-geth,nimbus/lodestar-geth,nimbus/nimbus-geth
+  - grandine/lighthouse-geth,grandine/prysm-geth,grandine/teku-geth,grandine/lodestar-geth,grandine/nimbus-geth
   assertoorTests:
   - assertoor-tests/block-proposal-check.yaml
 
