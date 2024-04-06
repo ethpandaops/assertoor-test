@@ -270,7 +270,9 @@ jobs:
         echo "Failed Test Task Status:" >> ./temp/chatgpt_query.txt
         echo "$failed_test_status" >> ./temp/chatgpt_query.txt
         echo "" >> ./temp/chatgpt_query.txt
-        tail -n 100 ./temp/dump/assertoor-*/assertoor--*/output.log >> ./temp/chatgpt_query.txt
+
+        tempdir="${{ runner.temp }}/assertoor-${{ github.run_id }}-${{ inputs.id }}"
+        tail -n 100 $tempdir/dump/assertoor-*/assertoor--*/output.log >> ./temp/chatgpt_query.txt
 
         query_text="$(cat ./temp/chatgpt_query.txt)"
 
