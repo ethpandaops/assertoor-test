@@ -85,6 +85,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install gettext-base
         fi
+    - name: Install GH CLI
+      uses: dev-hanz-ops/install-gh-cli-action@v0.1.0
     - name: "Generate kurtosis config with client pairs: ${{ inputs.pairs }}"
       shell: bash
       id: clients
