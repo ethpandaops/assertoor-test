@@ -234,113 +234,32 @@ jobs:
         echo ""
         cat ./temp/test-network.yaml
 
-    - name: Setup Kurtosis
-      shell: bash
-      run: |
-        echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-        sudo apt update
-        sudo apt install kurtosis-cli
-        kurtosis analytics disable
-
-    - name: Setup kubectl
-      if: ${{ inputs.backend == 'kubernetes' }}
-      uses: tale/kubectl-action@v1
+    - name: Run kurtosis testnet
+      id: testnet
+      uses: ethpandaops/kurtosis-assertoor-github-action@v1
       with:
-        base64-kube-config: ${{ secrets.KUBECONFIG }}
-    - name: Check Kubernetes engine
-      if: ${{ inputs.backend == 'kubernetes' }}
-      shell: bash
-      run: |
-        set -e
-        kubectl config use-context ${{ inputs.kubeCluster }}
-        kubectl get nodes
-
-        echo "Kubernetes engine is ready!"
-    - name: Configure kurtosis to use kubernetes backend
-      if: ${{ inputs.backend == 'kubernetes' }}
-      shell: bash
-      run: |
-        kurtosis_config=$(kurtosis config path)
-        echo "config-version: 2" > $kurtosis_config
-        echo "should-send-metrics: false" >> $kurtosis_config
-        echo "kurtosis-clusters:" >> $kurtosis_config
-        echo "  docker:" >> $kurtosis_config
-        echo "    type: \"docker\"" >> $kurtosis_config
-        echo "  cloud:" >> $kurtosis_config
-        echo "    type: \"kubernetes\"" >> $kurtosis_config
-        echo "    config:" >> $kurtosis_config
-        echo "      kubernetes-cluster-name: \"${{ inputs.kubeCluster }}\"" >> $kurtosis_config
-        echo "      storage-class: \"${{ inputs.kubeStorageClass }}\"" >> $kurtosis_config
-        echo "      enclave-size-in-megabytes: 200" >> $kurtosis_config
-
-        cat $kurtosis_config
-
-        kurtosis cluster set cloud
-        kurtosis gateway &
-
-        kurtosis engine status
-        kurtosis enclave ls || ( kurtosis engine restart && kurtosis enclave ls )
-
-    - name: Run Kurtosis
-      shell: bash
-      id: services
-      run: |
-        if [ "${{ inputs.backend }}" == "kubernetes" ]; then
-          kurtosis gateway &
-        fi
-
-        kurtosis_package="github.com/kurtosis-tech/ethereum-package"
-        if [ ! -z "${{ inputs.kurtosis_branch }}" ]; then
-          kurtosis_package="${kurtosis_package}@${{ inputs.kurtosis_branch }}"
-        fi
-
-        kurtosis run $kurtosis_package --enclave assertoor-${{ github.run_id }}-${{ inputs.id }} --args-file ./temp/test-network.yaml --image-download always --non-blocking-tasks --verbosity DETAILED
-
-        enclave_dump=$(kurtosis enclave inspect assertoor-${{ github.run_id }}-${{ inputs.id }})
-
-        assertoor_url=$(echo "$enclave_dump" | grep assertoor | grep http | sed 's/.*\(http:\/\/[0-9.:]\+\).*/\1/')
-        echo "assertoor_url: ${assertoor_url}"
-        echo "assertoor_url=${assertoor_url}" >> $GITHUB_OUTPUT
-
-    - name: Assertoor Status Check
-      id: test_result
-      uses: ethpandaops/assertoor-github-action@v1
-      with:
-        kurtosis_enclave_name: "assertoor-${{ github.run_id }}-${{ inputs.id }}"
-
-    - name: Generate enclave dump
-      shell: bash
-      run: |
-        mkdir -p ./temp/dump
-        cd ./temp/dump
-        cp ../test-network.yaml ./kurtosis-params.yaml
-
-        kurtosis enclave dump assertoor-${{ github.run_id }}-${{ inputs.id }}
-    - name: Upload dump artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: "kurtosis-enclave-dump-${{ inputs.id }}"
-        path: ./temp/dump
-
-    - name: Remove kurtosis enclave
-      if: ${{ always() }}
-      shell: bash
-      run: |
-        kurtosis enclave rm -f assertoor-${{ github.run_id }}-${{ inputs.id }} || true
+        kurtosis_extra_args: "--image-download always --non-blocking-tasks --verbosity DETAILED"
+        kurtosis_backend: ${{ inputs.backend }}
+        kubernetes_config: ${{ secrets.KUBECONFIG }}
+        kubernetes_cluster: ${{ inputs.kubeCluster }}
+        kubernetes_storage_class: ${{ inputs.kubeStorageClass }}
+        ethereum_package_branch: ${{ inputs.kurtosis_branch }}
+        ethereum_package_args: "./temp/test-network.yaml"
+        enclave_name: "assertoor-${{ github.run_id }}-${{ inputs.id }}"
     
     - name: Generate failure summary via ChatGPT (on failure)
-      if: ${{ steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt == 'true' }}
+      if: ${{ failure() && steps.testnet.outputs.test_result == 'failure' && inputs.use_chatgpt == 'true' }}
       id: chatgpt
       shell: bash
       run: |
         test_status=$(
         cat <<"EOF"
-        ${{ steps.test_result.outputs.test_overview }}
+        ${{ steps.testnet.outputs.test_overview }}
         EOF
         )
         failed_test_status=$(
         cat <<"EOF"
-        ${{ steps.test_result.outputs.failed_test_details }}
+        ${{ steps.testnet.outputs.failed_test_details }}
         EOF
         )
 
@@ -389,7 +308,7 @@ jobs:
         CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
 
     - name: Send discord notification (on failure)
-      if: ${{ (failure() || steps.test_result.outputs.result == 'failure') && inputs.send_notification == 'true' }}
+      if: ${{ failure() && inputs.send_notification == 'true' }}
       shell: bash
       run: |
         if [ -z "$DISCORD_HOOK" ]; then
@@ -400,7 +319,7 @@ jobs:
         touch ./temp/notification_text.txt
         echo "**Test ID:** ${{ inputs.id }}" >> ./temp/notification_text.txt
         echo "**Name:** ${{ inputs.name }}" >> ./temp/notification_text.txt
-        echo "**Status:** ${{ steps.test_result.outputs.result }}" >> ./temp/notification_text.txt
+        echo "**Status:** ${{ steps.testnet.outputs.test_result }}" >> ./temp/notification_text.txt
 
         start_time="${{ steps.clients.outputs.start_time }}"
         end_time="$(date +%s)"
@@ -412,12 +331,12 @@ jobs:
         echo "" >> ./temp/notification_text.txt
         
         echo "**Failed Test:**" >> ./temp/notification_text.txt
-        if [ -z "${{ steps.test_result.outputs.result }}" ]; then
+        if [ -z "${{ steps.testnet.outputs.test_result }}" ]; then
           echo "kurtosis testnet failed during startup" >> ./temp/notification_text.txt
         else
         test_status=$(
         cat <<"EOF"
-        ${{ steps.test_result.outputs.test_overview }}
+        ${{ steps.testnet.outputs.test_overview }}
         EOF
         )
           echo '```ansi'  >> ./temp/notification_text.txt
@@ -458,16 +377,17 @@ jobs:
 
     - name: Return test result
       shell: bash
+      if: ${{ always() }}
       run: |
-        test_result="${{ steps.test_result.outputs.result }}"
+        test_result="${{ steps.testnet.outputs.test_result }}"
         test_status=$(
         cat <<"EOF"
-        ${{ steps.test_result.outputs.test_overview }}
+        ${{ steps.testnet.outputs.test_overview }}
         EOF
         )
         failed_test_status=$(
         cat <<"EOF"
-        ${{ steps.test_result.outputs.failed_test_details }}
+        ${{ steps.testnet.outputs.failed_test_details }}
         EOF
         )
         chatgpt_summary=$(
@@ -492,7 +412,7 @@ jobs:
 
 
           echo ""
-          echo "See 'Await test completion' task for detailed logs about this failure!"
+          echo "See 'Run kurtosis testnet' task or run artifact for detailed logs about this failure!"
           echo ""
 
           exit 1 # fail action
