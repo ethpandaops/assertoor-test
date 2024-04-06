@@ -1,6 +1,6 @@
 id: block-proposal-check
 name: "Every client pair proposed a block"
-timeout: 2h
+timeout: 20m
 disable: false
 config:
   #validatorPairNames: []
