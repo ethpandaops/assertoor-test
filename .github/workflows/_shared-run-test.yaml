@@ -246,6 +246,7 @@ jobs:
     - name: Run kurtosis testnet
       id: testnet
       uses: ethpandaops/kurtosis-assertoor-github-action@v1
+      continue-on-error: true
       with:
         kurtosis_extra_args: "--image-download always --non-blocking-tasks --verbosity DETAILED"
         kurtosis_backend: ${{ inputs.backend }}
@@ -257,7 +258,7 @@ jobs:
         enclave_name: "assertoor-${{ github.run_id }}-${{ inputs.id }}"
     
     - name: Generate failure summary via ChatGPT (on failure)
-      if: ${{ failure() && steps.testnet.outputs.test_result == 'failure' && inputs.use_chatgpt == 'true' }}
+      if: ${{ steps.testnet.outputs.test_result == 'failure' && inputs.use_chatgpt == 'true' }}
       id: chatgpt
       shell: bash
       run: |
@@ -319,7 +320,7 @@ jobs:
         CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
 
     - name: Send discord notification (on failure)
-      if: ${{ failure() && inputs.send_notification == 'true' }}
+      if: ${{ (failure() || steps.testnet.outputs.test_result == 'failure') && inputs.send_notification == 'true' }}
       shell: bash
       run: |
         if [ -z "$DISCORD_HOOK" ]; then
@@ -365,10 +366,12 @@ jobs:
           echo "$chatgpt_summary" >> ./temp/notification_text.txt
         fi
 
+        echo "Resolve job_id..."
         jobs=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id}}/attempts/${{ github.run_attempt }}/jobs")
         job_id=$(echo $jobs | jq -r '.jobs[] | select(.runner_name=="${{ runner.name }}") | .id')
         job_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}/job/${job_id}"
 
+        echo "Generate discord message..."
         msgjson="{}"
         msgjson=$(echo "$msgjson" | jq -c ".title|=$(echo -n "Assertoor Test Failed: ${{ inputs.id }}" | jq -R -s '.')")
         msgjson=$(echo "$msgjson" | jq -c ".color|=15083560")
@@ -381,6 +384,7 @@ jobs:
         hookjson=$(echo "$hookjson" | jq -c ".embeds|=[${msgjson}]")
         echo $hookjson | jq
 
+        echo "Send discord message..."
         curl -X POST -H 'Content-Type: application/json' -d "$hookjson" $DISCORD_HOOK
       env:
         DISCORD_HOOK: ${{ secrets.DISCORD_HOOK }}
@@ -388,7 +392,6 @@ jobs:
 
     - name: Return test result
       shell: bash
-      if: ${{ always() }}
       run: |
         test_result="${{ steps.testnet.outputs.test_result }}"
         test_status=$(
