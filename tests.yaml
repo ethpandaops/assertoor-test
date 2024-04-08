@@ -129,7 +129,7 @@ tests:
   - assertoor-tests/validator-slashing-test.yaml
 
 - id: "verkle-conversion"
-  schedule: true
+  schedule: false
   name: "Test verkle conversion"
   clients: clients/verkle.yaml
   kurtosis_branch: bbusa/verkle-archive
