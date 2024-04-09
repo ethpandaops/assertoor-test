@@ -257,19 +257,27 @@ jobs:
         ethereum_package_args: "./temp/test-network.yaml"
         enclave_name: "assertoor-${{ github.run_id }}-${{ inputs.id }}"
     
+    - name: Await assertoor test result
+      id: test_result
+      uses: ethpandaops/assertoor-github-action@v1
+      if: ${{ fromJson(steps.testnet.outputs.services).assertoor.http.url != '' }}
+      with:
+        kurtosis_enclave_name: "assertoor-${{ github.run_id }}-${{ inputs.id }}"
+        assertoor_api_url: ${{ fromJson(steps.testnet.outputs.services).assertoor.http.url }}
+
     - name: Generate failure summary via ChatGPT (on failure)
-      if: ${{ steps.testnet.outputs.test_result == 'failure' && inputs.use_chatgpt == 'true' }}
+      if: ${{ steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt == 'true' }}
       id: chatgpt
       shell: bash
       run: |
         test_status=$(
         cat <<"EOF"
-        ${{ steps.testnet.outputs.test_overview }}
+        ${{ steps.test_result.outputs.test_overview }}
         EOF
         )
         failed_test_status=$(
         cat <<"EOF"
-        ${{ steps.testnet.outputs.failed_test_details }}
+        ${{ steps.test_result.outputs.failed_test_details }}
         EOF
         )
 
@@ -320,7 +328,7 @@ jobs:
         CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
 
     - name: Send discord notification (on failure)
-      if: ${{ (failure() || steps.testnet.outputs.test_result == 'failure') && inputs.send_notification == 'true' }}
+      if: ${{ (failure() || steps.test_result.outputs.result == 'failure') && inputs.send_notification == 'true' }}
       shell: bash
       run: |
         if [ -z "$DISCORD_HOOK" ]; then
@@ -331,7 +339,7 @@ jobs:
         touch ./temp/notification_text.txt
         echo "**Test ID:** ${{ inputs.id }}" >> ./temp/notification_text.txt
         echo "**Name:** ${{ inputs.name }}" >> ./temp/notification_text.txt
-        echo "**Status:** ${{ steps.testnet.outputs.test_result }}" >> ./temp/notification_text.txt
+        echo "**Status:** ${{ steps.test_result.outputs.result }}" >> ./temp/notification_text.txt
 
         start_time="${{ steps.clients.outputs.start_time }}"
         end_time="$(date +%s)"
@@ -343,12 +351,12 @@ jobs:
         echo "" >> ./temp/notification_text.txt
         
         echo "**Failed Test:**" >> ./temp/notification_text.txt
-        if [ -z "${{ steps.testnet.outputs.test_result }}" ]; then
+        if [ -z "${{ steps.test_result.outputs.result }}" ]; then
           echo "kurtosis testnet failed during startup" >> ./temp/notification_text.txt
         else
         test_status=$(
         cat <<"EOF"
-        ${{ steps.testnet.outputs.test_overview }}
+        ${{ steps.test_result.outputs.test_overview }}
         EOF
         )
           echo '```ansi'  >> ./temp/notification_text.txt
@@ -393,15 +401,15 @@ jobs:
     - name: Return test result
       shell: bash
       run: |
-        test_result="${{ steps.testnet.outputs.test_result }}"
+        test_result="${{ steps.test_result.outputs.result }}"
         test_status=$(
         cat <<"EOF"
-        ${{ steps.testnet.outputs.test_overview }}
+        ${{ steps.test_result.outputs.test_overview }}
         EOF
         )
         failed_test_status=$(
         cat <<"EOF"
-        ${{ steps.testnet.outputs.failed_test_details }}
+        ${{ steps.test_result.outputs.failed_test_details }}
         EOF
         )
         chatgpt_summary=$(
@@ -426,7 +434,7 @@ jobs:
 
 
           echo ""
-          echo "See 'Run kurtosis testnet' task or run artifact for detailed logs about this failure!"
+          echo "See 'Await assertoor test result' task or run artifact for detailed logs about this failure!"
           echo ""
 
           exit 1 # fail action
