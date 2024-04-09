@@ -20,6 +20,7 @@ tasks:
         failOnCheckMiss: true
     - name: run_task_matrix
       title: "Check verkle conversion state for all execution clients"
+      timeout: 12h
       configVars:
         matrixValues: "clientPairNames"
       config:
