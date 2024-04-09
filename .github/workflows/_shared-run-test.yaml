@@ -246,7 +246,6 @@ jobs:
     - name: Run kurtosis testnet
       id: testnet
       uses: ethpandaops/kurtosis-assertoor-github-action@v1
-      continue-on-error: true
       with:
         kurtosis_extra_args: "--image-download always --non-blocking-tasks --verbosity DETAILED"
         kurtosis_backend: ${{ inputs.backend }}
@@ -256,6 +255,7 @@ jobs:
         ethereum_package_branch: ${{ inputs.kurtosis_branch }}
         ethereum_package_args: "./temp/test-network.yaml"
         enclave_name: "assertoor-${{ github.run_id }}-${{ inputs.id }}"
+        await_assertoor_tests: "false"
     
     - name: Await assertoor test result
       id: test_result
@@ -266,7 +266,7 @@ jobs:
         assertoor_api_url: ${{ fromJson(steps.testnet.outputs.services).assertoor.http.url }}
 
     - name: Generate failure summary via ChatGPT (on failure)
-      if: ${{ steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt == 'true' }}
+      if: ${{ failure() && steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt == 'true' }}
       id: chatgpt
       shell: bash
       run: |
