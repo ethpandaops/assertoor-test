@@ -256,6 +256,7 @@ jobs:
         ethereum_package_args: "./temp/test-network.yaml"
         enclave_name: "assertoor-${{ github.run_id }}-${{ inputs.id }}"
         await_assertoor_tests: "false"
+        enclave_dump: "false"
     
     - name: Await assertoor test result
       id: test_result
@@ -264,6 +265,26 @@ jobs:
       with:
         kurtosis_enclave_name: "assertoor-${{ github.run_id }}-${{ inputs.id }}"
         assertoor_api_url: ${{ fromJson(steps.testnet.outputs.services).assertoor.http.url }}
+
+    - name: Generate enclave dump
+      if: ${{ always() && steps.test_result.outputs.result != '' }}
+      id: enclave_dump
+      shell: bash
+      run: |
+        enclave_name="assertoor-${{ github.run_id }}-${{ inputs.id }}"
+        tempdir="${{ runner.temp }}/$enclave_name"
+        mkdir -p $tempdir/dump
+        cp ./temp/test-network.yaml $tempdir/dump/kurtosis-params.yaml
+        cd $tempdir/dump
+        echo "dump_dir=$tempdir/dump" >> $GITHUB_OUTPUT
+
+        kurtosis enclave dump $enclave_name
+    - name: Upload dump artifact
+      if: ${{ always() && steps.enclave_dump.outputs.dump_dir != '' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: "enclave-dump-assertoor-${{ github.run_id }}-${{ inputs.id }}"
+        path: "${{ steps.enclave_dump.outputs.dump_dir }}"
 
     - name: Generate failure summary via ChatGPT (on failure)
       if: ${{ failure() && steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt == 'true' }}
