@@ -3,7 +3,7 @@ tests:
 
 # Test1
 - id: "latest-releases"
-  schedule: true
+  schedule: false
   name: "Test latest clients"
   clients: clients/latest-stable.yaml
   kurtosis: kurtosis-config/default.yaml
@@ -36,7 +36,7 @@ tests:
 
 # Check validator client combinations
 - id: "vc-compatibility"
-  schedule: false
+  schedule: true
   name: "Test validator client combinations"
   clients: clients/latest-dev.yaml
   kurtosis: kurtosis-config/default_without_snooper.yaml
