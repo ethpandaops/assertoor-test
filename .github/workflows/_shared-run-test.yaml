@@ -267,7 +267,7 @@ jobs:
         assertoor_api_url: ${{ fromJson(steps.testnet.outputs.services).assertoor.http.url }}
 
     - name: Generate enclave dump
-      if: ${{ always() && steps.test_result.outputs.result != '' }}
+      if: ${{ steps.test_result.outputs.result != '' }}
       id: enclave_dump
       shell: bash
       run: |
@@ -280,14 +280,14 @@ jobs:
 
         kurtosis enclave dump $enclave_name
     - name: Upload dump artifact
-      if: ${{ always() && steps.enclave_dump.outputs.dump_dir != '' }}
+      if: ${{ steps.enclave_dump.outputs.dump_dir != '' }}
       uses: actions/upload-artifact@v4
       with:
         name: "enclave-dump-assertoor-${{ github.run_id }}-${{ inputs.id }}"
         path: "${{ steps.enclave_dump.outputs.dump_dir }}"
 
     - name: Generate failure summary via ChatGPT (on failure)
-      if: ${{ failure() && steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt != 'false' }}
+      if: ${{ steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt != 'false' }}
       id: chatgpt
       shell: bash
       run: |
