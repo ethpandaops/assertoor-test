@@ -287,7 +287,7 @@ jobs:
         path: "${{ steps.enclave_dump.outputs.dump_dir }}"
 
     - name: Generate failure summary via ChatGPT (on failure)
-      if: ${{ failure() && steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt == 'true' }}
+      if: ${{ failure() && steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt != 'false' }}
       id: chatgpt
       shell: bash
       run: |
@@ -302,6 +302,20 @@ jobs:
         EOF
         )
 
+        chatgpt_config=$(
+        cat <<"EOF"
+        ${{ inputs.use_chatgpt }}
+        EOF
+        )
+
+        chatgpt_url="https://api.openai.com/v1/chat/completions"
+        chatgpt_model="gpt-4-turbo-preview"
+
+        if [ "$chatgpt_config" != "true" ]; then
+          chatgpt_url=$(echo "$chatgpt_config" | jq -r ".url // \"$chatgpt_url\"")
+          chatgpt_model=$(echo "$chatgpt_config" | jq -r ".model // \"$chatgpt_model\"")
+        fi
+
         echo "$test_status" >> ./temp/chatgpt_query.txt
         echo "" >> ./temp/chatgpt_query.txt
         echo "Failed Test Task Status:" >> ./temp/chatgpt_query.txt
@@ -309,7 +323,7 @@ jobs:
         echo "" >> ./temp/chatgpt_query.txt
 
         tempdir="${{ runner.temp }}/assertoor-${{ github.run_id }}-${{ inputs.id }}"
-        tail -n 100 $tempdir/dump/assertoor-*/assertoor--*/output.log >> ./temp/chatgpt_query.txt
+        tail -n 200 $tempdir/dump/assertoor-*/assertoor--*/output.log >> ./temp/chatgpt_query.txt
 
         query_text="$(cat ./temp/chatgpt_query.txt)"
 
@@ -317,11 +331,11 @@ jobs:
         query_json=$(
         cat <<"EOF" | envsubst | jq -c
         {
-          "model": "gpt-4-turbo-preview",
+          "model": "$chatgpt_model",
           "messages": [
             {
               "role": "system",
-              "content": "You will receive the test status & the last 100 lines of logs from the ethereum testnet testing tool assertoor. The status & logs you get are from failed tests. Please find the error, which client caused it and try summarizing what went wrong for a first technical insight. Assume that assertoor and the test are working fine, so it is probably a client causing problems. Your summary should be around 400 characters and may not exceed 700 characters. Use easy language with technical details like client names."
+              "content": "You will receive the test status & the last 200 lines of logs from the ethereum testnet testing tool assertoor. The status & logs you get are from failed tests. Please find the error, which client caused it and try summarizing what went wrong for a first technical insight. Assume that assertoor and the test are working fine, so it is probably a client causing problems. Your summary should be around 400 characters and may not exceed 700 characters. Use easy language with technical details like client names."
             },
             {
               "role": "user",
@@ -332,7 +346,7 @@ jobs:
         EOF
         )
 
-        result=$(curl https://api.openai.com/v1/chat/completions \
+        result=$(curl $chatgpt_url \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer $CHATGPT_KEY" \
           -d "$query_json"

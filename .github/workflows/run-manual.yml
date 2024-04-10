@@ -84,7 +84,9 @@ jobs:
         config: ${{ fromJson(needs.get_tests.outputs.test_configs) }}
     with:
       config: ${{ toJSON(matrix.config) }}
+      use_chatgpt: '{"url": "${{ vars.CHATGPT_URL }}", "model": "${{ vars.CHATGPT_MODEL }}"}'
     secrets:
       RANCHER_URL: ${{ secrets.RANCHER_URL }}
       RANCHER_TOKEN: ${{ secrets.RANCHER_TOKEN }}
       DISCORD_HOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
