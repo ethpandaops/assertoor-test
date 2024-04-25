@@ -7,7 +7,7 @@ tests:
   name: "Test latest clients"
   clients: clients/latest-stable.yaml
   kurtosis: kurtosis-config/default.yaml
-  worker: [self-hosted, size-m]
+  worker: [self-hosted-ghr, size-m-x64]
   backend: docker
   clientPairs:
   # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
