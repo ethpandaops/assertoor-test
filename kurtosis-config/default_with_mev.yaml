@@ -1,0 +1,16 @@
+
+network_params:
+  genesis_delay: 120
+  min_validator_withdrawability_delay: 1
+  shard_committee_period: 1
+  num_validator_keys_per_node: 250
+launch_additional_services: true
+additional_services:
+  - assertoor
+snooper_enabled: true
+disable_peer_scoring: true
+mev_type: mev-rs
+assertoor_params:
+  image: "ethpandaops/assertoor:master"
+  run_stability_check: false
+  run_block_proposal_check: false
