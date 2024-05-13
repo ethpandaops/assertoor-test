@@ -25,6 +25,13 @@ tasks:
   configVars:
     privateKey: "walletPrivkey"
 
+
+- name: check_consensus_slot_range
+  title: "Wait for slot >= 34"
+  timeout: 1h  # 1 epochs = ~0.12h
+  config:
+    minSlotNumber: 34
+
 # generate deposits & wait for activation
 - name: run_tasks
   title: "Generate deposits & track inclusion"
