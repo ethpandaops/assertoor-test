@@ -1,0 +1,21 @@
+id: bls-changes
+name: "Generate BLS changes"
+timeout: 1h
+config:
+  validatorCount: 64
+  targetAddress: "0x65D08a056c17Ae13370565B04cF77D2AfA1cB9FA"
+
+tasks:
+- name: check_clients_are_healthy
+  title: "Check if at least one client is ready"
+  timeout: 5m
+  config:
+    minClientCount: 1
+
+- name: generate_bls_changes
+  title: "Generate ${validatorCount} BLS changes"
+  configVars:
+    mnemonic: "validatorMnemonic"
+    targetAddress: "targetAddress"
+    limitTotal: "validatorCount"
+    indexCount: "validatorCount"
