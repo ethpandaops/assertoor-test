@@ -13,10 +13,14 @@ tasks:
   config:
     minClientCount: 1
 
-- name: generate_bls_changes
+- name: run_task_options
   title: "Generate ${validatorCount} BLS changes"
-  configVars:
-    mnemonic: "validatorMnemonic"
-    targetAddress: "targetAddress"
-    limitTotal: "validatorCount"
-    indexCount: "validatorCount"
+  config:
+    task:
+      name: generate_bls_changes
+      title: "Generate ${validatorCount} BLS changes"
+      configVars:
+        mnemonic: "validatorMnemonic"
+        targetAddress: "targetAddress"
+        limitTotal: "validatorCount"
+        indexCount: "validatorCount"

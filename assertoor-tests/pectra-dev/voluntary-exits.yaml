@@ -12,11 +12,15 @@ tasks:
   config:
     minClientCount: 1
 
-- name: generate_exits
-  title: "Exit ${validatorCount} Validators"
-  configVars:
-    mnemonic: "validatorMnemonic"
-    limitTotal: "validatorCount"
-    indexCount: "validatorCount"
+- name: run_task_options
+  title: "Generate ${validatorCount} BLS changes"
+  config:
+    task:
+      name: generate_exits
+      title: "Exit ${validatorCount} Validators"
+      configVars:
+        mnemonic: "validatorMnemonic"
+        limitTotal: "validatorCount"
+        indexCount: "validatorCount"
 
     
