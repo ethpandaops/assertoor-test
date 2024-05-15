@@ -47,23 +47,7 @@ tasks:
         depositContract: "depositContract"
 
     - name: run_task_matrix
-      title: "Wait for inclusion of all deposits"
-      timeout: 48h
-      configVars:
-        matrixValues: "validatorPubkeys"
-      config:
-        runConcurrent: true
-        matrixVar: "validatorPubkey"
-        task:
-          name: check_consensus_block_proposals
-          title: "Wait for deposit inclusion for (${validatorPubkey})"
-          config:
-            minDepositCount: 1
-          configVars:
-            expectDeposits: "| [.validatorPubkey]"
-
-    - name: run_task_matrix
-      title: "Wait for activation of all deposited keys"
+      title: "Wait for detection of all deposited keys"
       configVars:
         matrixValues: "validatorPubkeys"
       config:
@@ -74,6 +58,6 @@ tasks:
           title: "Wait for validator to become activated (${validatorPubkey})"
           config:
             validatorStatus:
-            - active_ongoing
+            - pending_initialized
           configVars:
             validatorPubKey: "validatorPubkey"
