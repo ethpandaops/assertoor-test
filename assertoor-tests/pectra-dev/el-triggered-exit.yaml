@@ -28,7 +28,7 @@ tasks:
     targetAddress: "0x00A3ca265EBcb825B45F985A16CEFB49958cE017"
     feeCap: 50000000000 # 50 gwei
     gasLimit: 1000000
-    value: "500000000000000000" # 0.5 ETH
+    amount: "500000000000000000" # 0.5 ETH
     failOnReject: true
   configVars:
     privateKey: "walletPrivkey"
