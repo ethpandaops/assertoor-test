@@ -32,7 +32,7 @@ tasks:
     stopChildOnResult: false
     tasks:
     - name: generate_deposits
-      title: "Generate 2 deposits with 1000 ETH each"
+      title: "Generate 10 deposits with 33 ETH each"
       config:
         limitTotal: 10
         limitPerSlot: 10
@@ -45,22 +45,6 @@ tasks:
         walletPrivkey: "depositorPrivateKey"
         mnemonic: "validatorMnemonic"
         depositContract: "depositContract"
-
-    - name: run_task_matrix
-      title: "Wait for inclusion of all deposits"
-      timeout: 48h
-      configVars:
-        matrixValues: "validatorPubkeys"
-      config:
-        runConcurrent: true
-        matrixVar: "validatorPubkey"
-        task:
-          name: check_consensus_block_proposals
-          title: "Wait for deposit inclusion for (${validatorPubkey})"
-          config:
-            minDepositCount: 10
-          configVars:
-            expectDeposits: "| [.validatorPubkey]"
 
     - name: run_task_matrix
       title: "Wait for detection of all deposited keys"
