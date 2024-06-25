@@ -14,10 +14,10 @@ tasks:
   - name: generate_child_wallet
     title: "Generate wallet for deployment"
     config:
-      prefundMinBalance: 10000000000000000000 # ensure 10 ETH
+      prefundMinBalance: 1000000000000000000 # 1 ETH
       walletAddressResultVar: "deployerAddress"
       walletPrivateKeyResultVar: "deployerPrivateKey"
-      randomSeed: true
+      walletSeed: "aave-deployer"
     configVars:
       privateKey: "walletPrivkey"
   
@@ -31,7 +31,6 @@ tasks:
         DEPLOYER_ADDRESS: "deployerAddress"
         NETWORK_RPC: "executionClientRpc"
       command: |
-        arch=$(dpkg --print-architecture)
         tmp_dir=$(mktemp -d -t aave-XXXXXXXXXX)
         cd $tmp_dir
         export HOME=$tmp_dir
