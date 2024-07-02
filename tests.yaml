@@ -134,7 +134,7 @@ tests:
   clients: clients/verkle.yaml
   kurtosis_branch: bbusa/verkle-archive
   kurtosis: kurtosis-config/verkle-conversion.yaml
-  worker: services-medium-shared
+  worker: [size-l-x64, self-hosted-ghr]
   backend: kubernetes
   kubernetes:
     cluster: k3s-berlin
