@@ -13,13 +13,17 @@ tasks:
   config:
     minClientCount: 1
 
-- name: generate_consolidations
-  title: "Consolidate Validator ${sourceValidatorIndex} to ${targetValidatorIndex}"
+- name: run_task_options
+  title: "Generate consolidations"
   config:
-    sourceIndexCount: 1
-    failOnReject: true
-    awaitReceipt: true
-  configVars:
-    walletPrivkey: "walletPrivkey"
-    sourceStartValidatorIndex: "sourceValidatorIndex"
-    targetValidatorIndex: "targetValidatorIndex"
+    task:
+      name: generate_consolidations
+      title: "Consolidate Validator ${sourceValidatorIndex} to ${targetValidatorIndex}"
+      config:
+        sourceIndexCount: 1
+        failOnReject: true
+        awaitReceipt: true
+      configVars:
+        walletPrivkey: "walletPrivkey"
+        sourceStartValidatorIndex: "sourceValidatorIndex"
+        targetValidatorIndex: "targetValidatorIndex"
