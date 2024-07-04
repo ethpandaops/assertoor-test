@@ -20,6 +20,6 @@ tasks:
     failOnReject: true
     awaitReceipt: true
   configVars:
-    privateKey: "walletPrivkey"
+    walletPrivkey: "walletPrivkey"
     sourceStartValidatorIndex: "sourceValidatorIndex"
     targetValidatorIndex: "targetValidatorIndex"
