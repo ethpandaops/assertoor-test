@@ -1,0 +1,19 @@
+
+id: blockhash-test
+name: "BLOCKHASH opcode test"
+timeout: 1h
+config:
+  #walletPrivkey: ""
+tasks:
+- name: check_clients_are_healthy
+  title: "Check if at least one client is ready"
+  timeout: 5m
+  config:
+    minClientCount: 1
+- name: check_execution_block
+  title: "Check head block and block hash from EL RPC"
+  timeout: 5m
+
+# check head block and block hash from EL rpc
+# use the result from check to make an eth_call to the contract
+# check the result of the eth_call and ensure it has the same block hash as EL rpc
