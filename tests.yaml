@@ -10,28 +10,28 @@ tests:
   worker: ubuntu-latest
   backend: docker
   clientPairs:
-  # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
-  # EL: [geth,besu,reth,erigon,nethermind]
-  - lighthouse-reth,lighthouse-besu,grandine-nethermind
-  - prysm-reth,lighthouse-erigon,teku-besu
-  - prysm-besu,lodestar-besu,nimbus-nethermind
-  - lodestar-geth,prysm-erigon,nimbus-besu
-  - lighthouse-geth,grandine-besu,nimbus-reth
-  - prysm-geth,prysm-nethermind,lodestar-reth
-  - lighthouse-nethermind,nimbus-erigon,teku-geth
-  - lodestar-erigon,teku-nethermind,grandine-reth
-  - grandine-geth,teku-erigon,lodestar-nethermind
-  - teku-reth,grandine-erigon,nimbus-geth
+    # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
+    # EL: [geth,besu,reth,erigon,nethermind]
+    - lighthouse-reth,lighthouse-besu,grandine-nethermind
+    - prysm-reth,lighthouse-erigon,teku-besu
+    - prysm-besu,lodestar-besu,nimbus-nethermind
+    - lodestar-geth,prysm-erigon,nimbus-besu
+    - lighthouse-geth,grandine-besu,nimbus-reth
+    - prysm-geth,prysm-nethermind,lodestar-reth
+    - lighthouse-nethermind,nimbus-erigon,teku-geth
+    - lodestar-erigon,teku-nethermind,grandine-reth
+    - grandine-geth,teku-erigon,lodestar-nethermind
+    - teku-reth,grandine-erigon,nimbus-geth
   assertoorTests:
-  - assertoor-tests/stability-check.yaml
-  - assertoor-tests/block-proposal-check.yaml
-  - assertoor-tests/eoa-transactions-test.yaml
-  - assertoor-tests/all-opcodes-test.yaml
-  - assertoor-tests/validator-withdrawal-test.yaml
-  - assertoor-tests/validator-exit-test.yaml
-  - assertoor-tests/validator-slashing-test.yaml
-  - assertoor-tests/dencun-opcodes-test.yaml
-  - assertoor-tests/blob-transactions-test.yaml
+    - assertoor-tests/stability-check.yaml
+    - assertoor-tests/block-proposal-check.yaml
+    - assertoor-tests/eoa-transactions-test.yaml
+    - assertoor-tests/all-opcodes-test.yaml
+    - assertoor-tests/validator-withdrawal-test.yaml
+    - assertoor-tests/validator-exit-test.yaml
+    - assertoor-tests/validator-slashing-test.yaml
+    - assertoor-tests/dencun-opcodes-test.yaml
+    - assertoor-tests/blob-transactions-test.yaml
 
 
 # Check validator client combinations
@@ -43,16 +43,17 @@ tests:
   worker: ubuntu-latest
   backend: docker
   clientPairs:
-  # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
-  # EL: [geth,besu,reth,erigon,nethermind]
-  - lighthouse/lighthouse-geth,lighthouse/prysm-geth,lighthouse/teku-geth,lighthouse/lodestar-geth,lighthouse/nimbus-geth
-  - prysm/lighthouse-geth,prysm/prysm-geth,prysm/teku-geth,prysm/lodestar-geth,prysm/nimbus-geth
-  - teku/lighthouse-geth,teku/prysm-geth,teku/teku-geth,teku/lodestar-geth,teku/nimbus-geth
-  - lodestar/lighthouse-geth,lodestar/prysm-geth,lodestar/teku-geth,lodestar/lodestar-geth,lodestar/nimbus-geth
-  - nimbus/lighthouse-geth,nimbus/prysm-geth,nimbus/teku-geth,nimbus/lodestar-geth,nimbus/nimbus-geth
-  - grandine/lighthouse-geth,grandine/prysm-geth,grandine/teku-geth,grandine/lodestar-geth,grandine/nimbus-geth
+    # EL: [geth]
+    # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
+    # VC: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
+    - lighthouse/lighthouse-geth,lighthouse/prysm-geth,lighthouse/teku-geth,lighthouse/lodestar-geth,lighthouse/nimbus-geth
+    - prysm/lighthouse-geth,prysm/prysm-geth,prysm/teku-geth,prysm/lodestar-geth,prysm/nimbus-geth
+    - teku/lighthouse-geth,teku/prysm-geth,teku/teku-geth,teku/lodestar-geth,teku/nimbus-geth
+    - lodestar/lighthouse-geth,lodestar/prysm-geth,lodestar/teku-geth,lodestar/lodestar-geth,lodestar/nimbus-geth
+    - nimbus/lighthouse-geth,nimbus/prysm-geth,nimbus/teku-geth,nimbus/lodestar-geth,nimbus/nimbus-geth
+    - grandine/lighthouse-geth,grandine/prysm-geth,grandine/teku-geth,grandine/lodestar-geth,grandine/nimbus-geth
   assertoorTests:
-  - assertoor-tests/block-proposal-check.yaml
+    - assertoor-tests/block-proposal-check.yaml
 
 
 # kubetest
@@ -67,15 +68,15 @@ tests:
     cluster: services
     storageClass: do-block-storage
   clientPairs:
-  - lighthouse-geth,prysm-reth,lodestar-besu
+    - lighthouse-geth,prysm-reth,lodestar-besu
   assertoorTests:
-  - assertoor-tests/stability-check.yaml
-  - assertoor-tests/block-proposal-check.yaml
-  - assertoor-tests/eoa-transactions-test.yaml
-  - assertoor-tests/all-opcodes-test.yaml
-  - assertoor-tests/validator-withdrawal-test.yaml
-  - assertoor-tests/validator-exit-test.yaml
-  - assertoor-tests/validator-slashing-test.yaml
+    - assertoor-tests/stability-check.yaml
+    - assertoor-tests/block-proposal-check.yaml
+    - assertoor-tests/eoa-transactions-test.yaml
+    - assertoor-tests/all-opcodes-test.yaml
+    - assertoor-tests/validator-withdrawal-test.yaml
+    - assertoor-tests/validator-exit-test.yaml
+    - assertoor-tests/validator-slashing-test.yaml
 
 
 - id: "deneb-gen"
@@ -87,26 +88,26 @@ tests:
   worker: ubuntu-latest
   backend: docker
   clientPairs:
-  - lighthouse-reth,lighthouse-besu,grandine-nethermind
-  - prysm-reth,lighthouse-erigon,teku-besu
-  - prysm-besu,lodestar-besu,nimbus-nethermind
-  - lodestar-geth,prysm-erigon,nimbus-besu
-  - lighthouse-geth,grandine-besu,nimbus-reth
-  - prysm-geth,prysm-nethermind,lodestar-reth
-  - lighthouse-nethermind,nimbus-erigon,teku-geth
-  - lodestar-erigon,teku-nethermind,grandine-reth
-  - grandine-geth,teku-erigon,lodestar-nethermind
-  - teku-reth,grandine-erigon,nimbus-geth
+    - lighthouse-reth,lighthouse-besu,grandine-nethermind
+    - prysm-reth,lighthouse-erigon,teku-besu
+    - prysm-besu,lodestar-besu,nimbus-nethermind
+    - lodestar-geth,prysm-erigon,nimbus-besu
+    - lighthouse-geth,grandine-besu,nimbus-reth
+    - prysm-geth,prysm-nethermind,lodestar-reth
+    - lighthouse-nethermind,nimbus-erigon,teku-geth
+    - lodestar-erigon,teku-nethermind,grandine-reth
+    - grandine-geth,teku-erigon,lodestar-nethermind
+    - teku-reth,grandine-erigon,nimbus-geth
   assertoorTests:
-  - assertoor-tests/stability-check.yaml
-  - assertoor-tests/block-proposal-check.yaml
-  - assertoor-tests/eoa-transactions-test.yaml
-  - assertoor-tests/blob-transactions-test.yaml
-  - assertoor-tests/all-opcodes-test.yaml
-  - assertoor-tests/dencun-opcodes-test.yaml
-  - assertoor-tests/validator-withdrawal-test.yaml
-  - assertoor-tests/validator-exit-test.yaml
-  - assertoor-tests/validator-slashing-test.yaml
+    - assertoor-tests/stability-check.yaml
+    - assertoor-tests/block-proposal-check.yaml
+    - assertoor-tests/eoa-transactions-test.yaml
+    - assertoor-tests/blob-transactions-test.yaml
+    - assertoor-tests/all-opcodes-test.yaml
+    - assertoor-tests/dencun-opcodes-test.yaml
+    - assertoor-tests/validator-withdrawal-test.yaml
+    - assertoor-tests/validator-exit-test.yaml
+    - assertoor-tests/validator-slashing-test.yaml
 
 
 - id: "verkle-test"
@@ -117,16 +118,16 @@ tests:
   worker: ubuntu-latest
   backend: docker
   clientPairs:
-  - lighthouse-geth,lighthouse-geth,lodestar-geth
+    - lighthouse-geth,lighthouse-geth,lodestar-geth
   assertoorTests:
-  - assertoor-tests/stability-check.yaml
-  - assertoor-tests/block-proposal-check.yaml
-  - assertoor-tests/eoa-transactions-test.yaml
-  - assertoor-tests/all-opcodes-test.yaml
-  - assertoor-tests/validator-withdrawal-test.yaml
-  # voluntary exit test does not work because according to EIP7044 assertoor signs exits with the capella signing domain
-  #- assertoor-tests/validator-exit-test.yaml
-  - assertoor-tests/validator-slashing-test.yaml
+    - assertoor-tests/stability-check.yaml
+    - assertoor-tests/block-proposal-check.yaml
+    - assertoor-tests/eoa-transactions-test.yaml
+    - assertoor-tests/all-opcodes-test.yaml
+    - assertoor-tests/validator-withdrawal-test.yaml
+    # voluntary exit test does not work because according to EIP7044 assertoor signs exits with the capella signing domain
+    #- assertoor-tests/validator-exit-test.yaml
+    - assertoor-tests/validator-slashing-test.yaml
 
 - id: "verkle-conversion"
   schedule: false
@@ -153,20 +154,20 @@ tests:
   worker: ubuntu-latest
   backend: docker
   clientPairs:
-  # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
-  # EL: [geth,besu,reth,erigon,nethermind]
-  - lighthouse-reth,lighthouse-besu,grandine-nethermind
-  #- prysm-reth,lighthouse-erigon,teku-besu
-  #- prysm-besu,lodestar-besu,nimbus-nethermind
-  #- lodestar-geth,prysm-erigon,nimbus-besu
-  #- lighthouse-geth,grandine-besu,nimbus-reth
-  #- prysm-geth,prysm-nethermind,lodestar-reth
-  #- lighthouse-nethermind,nimbus-erigon,teku-geth
-  #- lodestar-erigon,teku-nethermind,grandine-reth
-  #- grandine-geth,teku-erigon,lodestar-nethermind
-  #- teku-reth,grandine-erigon,nimbus-geth
+    # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
+    # EL: [geth,besu,reth,erigon,nethermind]
+    - lighthouse-reth,lighthouse-besu,grandine-nethermind
+    #- prysm-reth,lighthouse-erigon,teku-besu
+    #- prysm-besu,lodestar-besu,nimbus-nethermind
+    #- lodestar-geth,prysm-erigon,nimbus-besu
+    #- lighthouse-geth,grandine-besu,nimbus-reth
+    #- prysm-geth,prysm-nethermind,lodestar-reth
+    #- lighthouse-nethermind,nimbus-erigon,teku-geth
+    #- lodestar-erigon,teku-nethermind,grandine-reth
+    #- grandine-geth,teku-erigon,lodestar-nethermind
+    #- teku-reth,grandine-erigon,nimbus-geth
   assertoorTests:
-  - assertoor-tests/block-proposal-check.yaml
+    - assertoor-tests/block-proposal-check.yaml
 
 # mev-proposals test
 - id: "mev-proposals"
@@ -177,17 +178,17 @@ tests:
   worker: ubuntu-latest
   backend: docker
   clientPairs:
-  # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
-  # EL: [geth,besu,reth,erigon,nethermind]
-  - lighthouse-reth,lighthouse-besu,grandine-nethermind
-  - prysm-reth,lighthouse-erigon,teku-besu
-  - prysm-besu,lodestar-besu,nimbus-nethermind
-  - lodestar-geth,prysm-erigon,nimbus-besu
-  - lighthouse-geth,grandine-besu,nimbus-reth
-  - prysm-geth,prysm-nethermind,lodestar-reth
-  - lighthouse-nethermind,nimbus-erigon,teku-geth
-  - lodestar-erigon,teku-nethermind,grandine-reth
-  - grandine-geth,teku-erigon,lodestar-nethermind
-  - teku-reth,grandine-erigon,nimbus-geth
+    # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
+    # EL: [geth,besu,reth,erigon,nethermind]
+    - lighthouse-reth,lighthouse-besu,grandine-nethermind
+    - prysm-reth,lighthouse-erigon,teku-besu
+    - prysm-besu,lodestar-besu,nimbus-nethermind
+    - lodestar-geth,prysm-erigon,nimbus-besu
+    - lighthouse-geth,grandine-besu,nimbus-reth
+    - prysm-geth,prysm-nethermind,lodestar-reth
+    - lighthouse-nethermind,nimbus-erigon,teku-geth
+    - lodestar-erigon,teku-nethermind,grandine-reth
+    - grandine-geth,teku-erigon,lodestar-nethermind
+    - teku-reth,grandine-erigon,nimbus-geth
   assertoorTests:
-  - assertoor-tests/mev-block-proposal-check.yaml
+    - assertoor-tests/mev-block-proposal-check.yaml
