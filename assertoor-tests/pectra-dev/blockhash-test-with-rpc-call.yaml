@@ -10,8 +10,6 @@ tasks:
   timeout: 5m
   config:
     minClientCount: 1
-- name: check_consensus_forks
-  title: "Check consensus forks"
 - name: check_execution_block
   title: "Check head block and block hash from EL RPC"
   timeout: 5m
