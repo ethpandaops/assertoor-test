@@ -1,4 +1,3 @@
-
 id: blockhash-test
 name: "BLOCKHASH opcode test"
 timeout: 1h
@@ -13,13 +12,21 @@ tasks:
 - name: check_execution_block
   title: "Check head block and block hash from EL RPC"
   timeout: 5m
+  config:
+    BlockHeaderResultVar: "headBlock"
 - name: run_shell
   title: "Convert block number to EIP-2935 input"
   config:
     envVars:
-      BLOCK: "headBlock"
+      BLOCK: "headBlock" # passing whole json here, that's fine
     command: |
-      echo $BLOCK
+      echo $BLOCK | jq
+#- name: check_eth_call
+#  title: "Check EIP-2935 contract result"
+#  configVars:
+#    callData: "eip2935Input"
+#    expectResult: "headBlock.hash" # << this won't work as you don't have logic to extract the hash field from the json here
+#      echo $BLOCK
 # check head block and block hash from EL rpc
 # use the result from check to make an eth_call to the contract
 # check the result of the eth_call and ensure it has the same block hash as EL rpc
