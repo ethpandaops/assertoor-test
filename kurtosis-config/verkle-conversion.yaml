@@ -7,7 +7,6 @@ network_params:
 snooper_enabled: true
 persistent: true
 global_node_selectors: {"kubernetes.io/hostname": "lenovo-berlin-02"}
-launch_additional_services: true
 additional_services:
   - assertoor
   - dora
