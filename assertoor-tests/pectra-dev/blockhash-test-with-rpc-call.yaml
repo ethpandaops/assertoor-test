@@ -18,15 +18,14 @@ tasks:
   title: "Convert block number to EIP-2935 input"
   config:
     envVars:
-      BLOCK: "headBlock" # passing whole json here, that's fine
+      BLOCK: "headBlock"
     command: |
-      echo $BLOCK | jq
-#- name: check_eth_call
-#  title: "Check EIP-2935 contract result"
-#  configVars:
-#    callData: "eip2935Input"
-#    expectResult: "headBlock.hash" # << this won't work as you don't have logic to extract the hash field from the json here
-#      echo $BLOCK
-# check head block and block hash from EL rpc
-# use the result from check to make an eth_call to the contract
-# check the result of the eth_call and ensure it has the same block hash as EL rpc
+      echo "::set-var headBlockHash $(echo $BLOCK | jq -r '.hash')"
+      BLOCK_NUMBER=$(echo $BLOCK | jq -r '.number')
+      hexval=$(printf "0x000000000000000000000000000000000000000000000000%016x\n" $BLOCK_NUMBER)
+      echo "::set-var eip2935input $hexval"
+- name: check_eth_call
+  title: "Check EIP-2935 contract result"
+  configVars:
+    EthCallData: "eip2935Input"
+    ExpectResult: "headBlockHash"
