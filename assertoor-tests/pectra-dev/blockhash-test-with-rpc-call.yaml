@@ -33,5 +33,5 @@ tasks:
 - name: check_eth_call
   title: "Check EIP-2935 contract result"
   configVars:
-    EthCallData: "eip2935Input"
+    EthCallData: "eip2935input"
     ExpectResult: "headBlockHash"
