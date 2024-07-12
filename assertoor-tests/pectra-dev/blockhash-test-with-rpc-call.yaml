@@ -27,9 +27,16 @@ tasks:
       echo $BLOCK_NUMBER
       echo $BLOCK_HASH
       echo "::set-var headBlockHash $BLOCK_HASH"
-      PADDED_BLOCK_NUMBER=$(printf '0x%064x' "$((BLOCK_NUMBER))")
-      echo $PADDED_BLOCK_NUMBER
-      echo "::set-var eip2935input $PADDED_BLOCK_NUMBER"
+
+      # Remove 0x from the block number
+      BLOCK_NUMBER="${BLOCK_NUMBER#0x}"
+
+      # Format the block number to 32 hexadecimal digits
+      hexval=$(printf "%032x" $((16#$BLOCK_NUMBER)))
+      echo $hexval
+
+      # Set the eip2935input variable
+      echo "::set-var eip2935input $hexval"
 - name: check_eth_call
   title: "Check EIP-2935 contract result"
   configVars:
