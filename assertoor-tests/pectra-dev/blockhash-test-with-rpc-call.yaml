@@ -27,7 +27,7 @@ tasks:
       echo $BLOCK_NUMBER
       echo $BLOCK_HASH
       echo "::set-var headBlockHash $BLOCK_HASH"
-      PADDED_BLOCK_NUMBER=$(printf '0x%032x' "$((BLOCK_NUMBER))")
+      PADDED_BLOCK_NUMBER=$(printf '0x%064x' "$((BLOCK_NUMBER))")
       echo $PADDED_BLOCK_NUMBER
       echo "::set-var eip2935input $PADDED_BLOCK_NUMBER"
 - name: check_eth_call
