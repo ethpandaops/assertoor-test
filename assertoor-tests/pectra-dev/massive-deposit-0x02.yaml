@@ -47,19 +47,3 @@ tasks:
         mnemonic: "validatorMnemonic"
         depositContract: "depositContract"
         withdrawalCredentials: "| \"0x020000000000000000000000\" + (.targetAddress | capture(\"(0x)?(?<addr>.+)\").addr)"
-
-    - name: run_task_matrix
-      title: "Wait for detection of all deposited keys"
-      configVars:
-        matrixValues: "validatorPubkeys"
-      config:
-        runConcurrent: true
-        matrixVar: "validatorPubkey"
-        task:
-          name: check_consensus_validator_status
-          title: "Wait for validator to become activated (${validatorPubkey})"
-          config:
-            validatorStatus:
-            - pending_initialized
-          configVars:
-            validatorPubKey: "validatorPubkey"
