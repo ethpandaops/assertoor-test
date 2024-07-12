@@ -27,7 +27,10 @@ tasks:
       echo $BLOCK_NUMBER
       echo $BLOCK_HASH
       echo "::set-var headBlockHash $BLOCK_HASH"
-      hexval=$(printf "0x000000000000000000000000000000000000000000000000%016x\n" $BLOCK_NUMBER)
+      BLOCK_NUMBER="${BLOCK_NUMBER#0x}" # Removes 0x to make it a standard format across clients
+      hexval=$(printf "0x%032s\n" $BLOCK_NUMBER)
+      hexval=${hexifval// /0}  # Replace spaces with zeros
+      echo $hexval
       echo "::set-var eip2935input $hexval"
 - name: check_eth_call
   title: "Check EIP-2935 contract result"
