@@ -20,8 +20,13 @@ tasks:
     envVars:
       BLOCK: "headBlock"
     command: |
-      echo "::set-var headBlockHash $(echo $BLOCK | jq -r '.hash')"
-      BLOCK_NUMBER=$(echo $BLOCK | jq -r '.number')
+      BLOCK_JSON=$(echo "$BLOCK" | jq '. | fromjson')
+      BLOCK_NUMBER=$(echo "$BLOCK_JSON" | jq -r '.number')
+      BLOCK_HASH=$(echo "$BLOCK_JSON" | jq -r '.hash')
+      echo $BLOCK_JSON
+      echo $BLOCK_NUMBER
+      echo $BLOCK_HASH
+      echo "::set-var headBlockHash $BLOCK_HASH"
       hexval=$(printf "0x000000000000000000000000000000000000000000000000%016x\n" $BLOCK_NUMBER)
       echo "::set-var eip2935input $hexval"
 - name: check_eth_call
