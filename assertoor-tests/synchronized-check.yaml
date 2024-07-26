@@ -14,7 +14,6 @@ tasks:
     task:
       name: run_tasks_concurrent
       title: "Check if ${checkClient} is synchronized"
-      timeout: 30m
       config:
         tasks:
         - name: check_consensus_sync_status
