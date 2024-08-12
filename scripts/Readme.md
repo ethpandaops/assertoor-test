@@ -43,6 +43,7 @@ To divide the list of tests into groups for parallel execution, use the --groups
 This will split the tests into 3 groups.
 
 ### Raw Output Usage
+
 To output the raw URLs without YAML formatting, use the --raw option:
 
 `python Scripts/generate_tests_yaml.py --raw`
@@ -53,6 +54,24 @@ This will output the URLs as plain text, one per line:
 https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/pectra-dev/test1.yaml
 https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/verkle-dev/testA.yaml
 ...
+```
+
+### Json Output Usage
+
+To output the test URLs in JSON format, use the --json option:
+
+`python Scripts/generate_tests_yaml.py --json`
+
+This will output the URLs in a JSON format, like so:
+
+```
+{
+  "1": [
+    "https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/pectra-dev/test1.yaml",
+    "https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/verkle-dev/testA.yaml",
+    ...
+  ]
+}
 ```
 
 ## Example Output
