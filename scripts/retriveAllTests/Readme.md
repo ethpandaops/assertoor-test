@@ -20,12 +20,13 @@ This will generate a YAML structure with all .yaml files found in the assertoor-
 ### Branch Selection
 To specify a branch other than the default (master), use the --branch option:
 
-`python SretriveAllTests.py --branch "pectra"`
+`python retriveAllTests.py --branch "pectra"`
 
 This command will use the pectra branch instead of master to retrieve the test files.
 
-*WARNING*
-This is only a branch replacement feature in path - make sure to checkout repository on proper branch before applying this parameter.
+>**IMPORTANT**
+>
+>This is only a branch replacement feature in path - make sure to checkout repository on proper branch before applying this parameter.
 
 ### Filtering Tests
 #### Include Specific Tests
