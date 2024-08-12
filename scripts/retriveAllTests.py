@@ -51,7 +51,7 @@ def main():
         if args.raw:
             print(f"\n".join(group) + "\n")
         else:
-            print(f"{construct_yaml_structure(group)}\n")
+            print(f"{construct_yaml_structure(group)}")
 
 if __name__ == "__main__":
     main()
