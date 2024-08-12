@@ -13,16 +13,26 @@ To use the script, navigate to the root directory of your project and run the sc
 
 ### Basic Usage
 
-`python Scripts/generate_tests_yaml.py`
+`python retriveAllTests.py`
 
 This will generate a YAML structure with all .yaml files found in the assertoor-tests directory and its subdirectories, excluding all.yaml.
+
+### Branch Selection
+To specify a branch other than the default (master), use the --branch option:
+
+`python SretriveAllTests.py --branch "pectra"`
+
+This command will use the pectra branch instead of master to retrieve the test files.
+
+*WARNING*
+This is only a branch replacement feature in path - make sure to checkout repository on proper branch before applying this parameter.
 
 ### Filtering Tests
 #### Include Specific Tests
 
 To include only certain tests based on their filenames, use the --include option:
 
-`python Scripts/generate_tests_yaml.py --include "validator" "proposal"`
+`python retriveAllTests.py --include "validator" "proposal"`
 
 This will include all files with validator or proposal in their filenames.
 
@@ -30,7 +40,7 @@ This will include all files with validator or proposal in their filenames.
 
 To exclude certain tests based on their filenames, use the --exclude option:
 
-`python Scripts/generate_tests_yaml.py --exclude "verkle" "blob"`
+`python retriveAllTests.py --exclude "verkle" "blob"`
 
 This will exclude all files with verkle or blob in their filenames.
 
@@ -38,7 +48,7 @@ This will exclude all files with verkle or blob in their filenames.
 
 To divide the list of tests into groups for parallel execution, use the --groups option:
 
-`python Scripts/generate_tests_yaml.py --groups 3`
+`python retriveAllTests.py --groups 3`
 
 This will split the tests into 3 groups.
 
@@ -46,7 +56,7 @@ This will split the tests into 3 groups.
 
 To output the raw URLs without YAML formatting, use the --raw option:
 
-`python Scripts/generate_tests_yaml.py --raw`
+`python retriveAllTests.py --raw`
 
 This will output the URLs as plain text, one per line:
 
@@ -60,7 +70,7 @@ https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-te
 
 To output the test URLs in JSON format, use the --json option:
 
-`python Scripts/generate_tests_yaml.py --json`
+`python retriveAllTests.py --json`
 
 This will output the URLs in a JSON format, like so:
 
