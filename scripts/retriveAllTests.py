@@ -49,13 +49,15 @@ def main():
     yaml_files = get_yaml_files(tests_dir, include=args.include, exclude=args.exclude)
     sliced_yaml_files = slice_tests(yaml_files, args.groups)
 
-    for idx, group in enumerate(sliced_yaml_files, start=1):
-        if args.json:
-            print(json.dumps({f"Group {idx}": group}, indent=2))
-        elif args.raw:
-            print("\n".join(group) + "\n")
-        else:
-            print(construct_yaml_structure(group))
+    if args.json:
+        json_output = {str(idx + 1): group for idx, group in enumerate(sliced_yaml_files)}
+        print(json.dumps(json_output, indent=2))
+    else:
+        for idx, group in enumerate(sliced_yaml_files, start=1):
+            if args.raw:
+                print("\n".join(group) + "\n")
+            else:
+                print(construct_yaml_structure(group))
 
 if __name__ == "__main__":
     main()
