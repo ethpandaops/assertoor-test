@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import argparse
 import math
+import json
 
 repo_dir = Path(__file__).resolve().parents[1]
 tests_dir = repo_dir / "assertoor-tests"
