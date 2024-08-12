@@ -49,9 +49,9 @@ def main():
 
     for idx, group in enumerate(sliced_yaml_files, start=1):
         if args.raw:
-            print(f"Group {idx}:\n" + "\n".join(group) + "\n")
+            print(f"\n".join(group) + "\n")
         else:
-            print(f"Group {idx}:\n{construct_yaml_structure(group)}\n")
+            print(f"{construct_yaml_structure(group)}\n")
 
 if __name__ == "__main__":
     main()
