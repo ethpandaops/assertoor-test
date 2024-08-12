@@ -24,7 +24,9 @@ def get_yaml_files(tests_dir, include=None, exclude=None):
                     continue
                 
                 raw_url = f"https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/{full_path.relative_to(repo_dir)}"
-                yaml_files
+                yaml_files.append(raw_url)
+    
+    return yaml_files
 
 def construct_yaml_structure(yaml_files):
     yaml_structure = "tests:\n"
