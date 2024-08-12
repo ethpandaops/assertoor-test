@@ -41,6 +41,7 @@ def main():
     parser.add_argument("--exclude", type=str, nargs='*', help="List of texts to exclude from file names (exclude matching files).")
     parser.add_argument("--groups", type=int, help="Number of groups to slice the tests into.", default=1)
     parser.add_argument("--raw", action="store_true", help="Output raw URLs without YAML formatting.")
+    parser.add_argument("--json", action="store_true", help="Output URLs in JSON format.")
     
     args = parser.parse_args()
 
@@ -48,10 +49,12 @@ def main():
     sliced_yaml_files = slice_tests(yaml_files, args.groups)
 
     for idx, group in enumerate(sliced_yaml_files, start=1):
-        if args.raw:
-            print(f"\n".join(group) + "\n")
+        if args.json:
+            print(json.dumps({f"Group {idx}": group}, indent=2))
+        elif args.raw:
+            print("\n".join(group) + "\n")
         else:
-            print(f"{construct_yaml_structure(group)}")
+            print(construct_yaml_structure(group))
 
 if __name__ == "__main__":
     main()
