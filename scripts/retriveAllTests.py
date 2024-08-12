@@ -14,10 +14,13 @@ def get_yaml_files(tests_dir, include=None, exclude=None):
             if file.endswith(".yaml"):
                 if file == "all.yaml":
                     continue
-                if include and not any(inc in file for inc in include):
+                
+                if include and not any(inc in str(full_path) for inc in include):
                     continue
-                if exclude and any(exc in file for exc in exclude):
+                
+                if exclude and any(exc in str(full_path) for exc in exclude):
                     continue
+                    
                 full_path = Path(root) / file
                 raw_url = f"https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/{full_path.relative_to(repo_dir)}"
                 yaml_files.append(raw_url)
