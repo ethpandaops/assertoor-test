@@ -12,6 +12,8 @@ def get_yaml_files(tests_dir, include=None, exclude=None):
     for root, _, files in os.walk(tests_dir):
         for file in files:
             if file.endswith(".yaml"):
+                full_path = Path(root) / file
+                
                 if file == "all.yaml":
                     continue
                 
@@ -20,11 +22,9 @@ def get_yaml_files(tests_dir, include=None, exclude=None):
                 
                 if exclude and any(exc in str(full_path) for exc in exclude):
                     continue
-                    
-                full_path = Path(root) / file
+                
                 raw_url = f"https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/{full_path.relative_to(repo_dir)}"
-                yaml_files.append(raw_url)
-    return yaml_files
+                yaml_fil
 
 def construct_yaml_structure(yaml_files):
     yaml_structure = "tests:\n"
