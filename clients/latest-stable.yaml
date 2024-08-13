@@ -13,7 +13,7 @@ consensus: # CL Clients
   lodestar:
     image: "chainsafe/lodestar:latest"
   grandine:
-    image: "ethpandaops/grandine:develop"
+    image: "sifrai/grandine:stable"
 
 execution: # EL Clients
   geth:
