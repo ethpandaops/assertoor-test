@@ -86,12 +86,15 @@ This will output the URLs in a JSON format, like so:
 ```
 
 ## Example Output
-The script will output the YAML structure in the format required for your CI/CD configuration:
+The script will output the assertoor_params section needed for Kurtosis network_params YAML structure in the format required for your CI/CD configuration:
 
 ```
-tests:
-    - https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/pectra-dev/test1.yaml
-    - https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/verkle-dev/testA.yaml
+assertoor_params:
+  tests:
+    - { file: "https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/all-opcodes-test.yaml" }
+    - { file: "https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/big-calldata-tx-test.yaml" }
+    - { file: "https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/blob-transactions-test.yaml" }
+    - { file: "https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/block-proposal-check.yaml" }
     ...
 ```
 

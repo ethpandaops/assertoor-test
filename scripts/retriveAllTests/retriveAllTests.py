@@ -30,9 +30,10 @@ def get_yaml_files(tests_dir, branch="master", include=None, exclude=None):
     return yaml_files
 
 def construct_yaml_structure(yaml_files):
-    yaml_structure = "tests:\n"
+    yaml_structure = "assertoor_params:\n"
+    yaml_structure += "  tests:\n"
     for url in yaml_files:
-        yaml_structure += f"    - {url}\n"
+        yaml_structure += f"    - {{ file: \"{url}\" }}\n"
     return yaml_structure
 
 def slice_tests(yaml_files, groups):
