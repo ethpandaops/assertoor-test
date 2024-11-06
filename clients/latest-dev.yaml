@@ -22,7 +22,7 @@ execution: # EL Clients
     image: "nethermind/nethermind:master"
     params: ["--TxPool.BlobsSupport", "InMemory"]
   erigon:
-    image: "thorax/erigon:devel"
+    image: "erigontech/erigon:main-latest"
   besu:
     image: "ethpandaops/besu::^main-[0-9a-f]{7}$"
   reth:
