@@ -7,7 +7,7 @@ on:
 
 concurrency:
   group: "scheduled-test"
-  cancel-in-progress: false
+  cancel-in-progress: 
 
 jobs:
   get_tests:
@@ -35,7 +35,7 @@ jobs:
     uses: ./.github/workflows/_shared-run.yaml
     name: "${{ matrix.config.name }}"
     strategy:
-      fail-fast: false
+      fail-fast: 
       matrix:
         config: ${{ fromJson(needs.get_tests.outputs.test_configs) }}
     with:
