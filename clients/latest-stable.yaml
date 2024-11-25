@@ -22,7 +22,7 @@ execution: # EL Clients
     image: "nethermind/nethermind:latest"
     params: ["--TxPool.BlobsSupport", "InMemory"]
   erigon:
-    image: "erigontech/erigon::^v[0-9]+.[0-9]+.[0-9]+$"
+    image: "erigontech/erigon:latest"
   besu:
     image: "hyperledger/besu:latest"
   reth:
