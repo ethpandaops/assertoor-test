@@ -34,6 +34,7 @@ jobs:
       name: ${{ steps.config.outputs.name }}
       clients: ${{ steps.config.outputs.clients }}
       kurtosis: ${{ steps.config.outputs.kurtosis }}
+      kurtosis_version: ${{ steps.config.outputs.kurtosis_version }}
       kurtosis_branch: ${{ steps.config.outputs.kurtosis_branch }}
       worker: ${{ steps.config.outputs.worker }}
       backend: ${{ steps.config.outputs.backend }}
