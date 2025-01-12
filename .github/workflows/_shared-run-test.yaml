@@ -368,6 +368,55 @@ jobs:
         name: "enclave-dump-assertoor-${{ github.run_id }}-${{ inputs.id }}"
         path: "${{ steps.enclave_dump.outputs.dump_dir }}"
 
+    - name: Generate github summary (on failure)
+      if: ${{ (failure() || steps.test_result.outputs.result == 'failure') }}
+      shell: bash
+      run: |
+        echo "# Test Failed: ${{ inputs.id }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Test Details" >> $GITHUB_STEP_SUMMARY
+        echo "- **Test ID:** ${{ inputs.id }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Name:** ${{ inputs.name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status:** ${{ steps.test_result.outputs.result }}" >> $GITHUB_STEP_SUMMARY
+        
+        start_time="${{ steps.clients.outputs.start_time }}"
+        end_time="$(date +%s)"
+        runtime="$(expr $end_time - $start_time)"
+        echo "- **Run Time:** $(printf '%02dh:%02dm:%02ds\n' $((runtime/3600)) $((runtime%3600/60)) $((runtime%60)))" >> $GITHUB_STEP_SUMMARY
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Client Configuration" >> $GITHUB_STEP_SUMMARY
+        cat ./temp/clients_summary.txt >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "## Failed Test" >> $GITHUB_STEP_SUMMARY
+        if [ -z "${{ steps.test_result.outputs.result }}" ]; then
+          echo "kurtosis testnet failed during startup" >> $GITHUB_STEP_SUMMARY
+        else
+          test_status=$(
+          cat <<"EOF"
+          ${{ steps.test_result.outputs.test_overview }}
+          EOF
+          )
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "$test_status" | grep "failure" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        fi
+
+        chatgpt_summary=$(
+        cat <<"EOF"
+        ${{ steps.chatgpt.outputs.summary }}
+        EOF
+        )
+        if ! [ -z "$chatgpt_summary" ]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Summary (ChatGPT)" >> $GITHUB_STEP_SUMMARY
+          echo "$chatgpt_summary" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "See job logs and artifacts for more details about this failure." >> $GITHUB_STEP_SUMMARY
+
     - name: Send discord notification (on failure)
       if: ${{ (failure() || steps.test_result.outputs.result == 'failure') && inputs.send_notification == 'true' }}
       shell: bash
