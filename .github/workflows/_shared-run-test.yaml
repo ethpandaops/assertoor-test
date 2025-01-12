@@ -256,7 +256,7 @@ jobs:
       id: testnet
       uses: ethpandaops/kurtosis-assertoor-github-action@v1
       with:
-        kurtosis_extra_args: "--image-download always --non-blocking-tasks --verbosity DETAILED"
+        kurtosis_extra_args: "--non-blocking-tasks --verbosity DETAILED"
         kurtosis_backend: ${{ inputs.backend }}
         kubernetes_config: ${{ secrets.KUBECONFIG }}
         kubernetes_cluster: ${{ inputs.kubeCluster }}
