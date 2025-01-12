@@ -55,6 +55,27 @@ tests:
   assertoorTests:
     - assertoor-tests/block-proposal-check.yaml
 
+# Check validator client combinations with stable clients
+- id: "vc-compatibility-stable"
+  schedule: false
+  name: "Test validator client combinations with stable clients"
+  clients: clients/latest-stable.yaml
+  kurtosis: kurtosis-config/default_without_snooper.yaml
+  worker: ubuntu-latest
+  backend: docker
+  clientPairs:
+    # EL: [geth]
+    # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
+    # VC: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
+    - lighthouse/lighthouse-geth,lighthouse/prysm-geth,lighthouse/teku-geth,lighthouse/lodestar-geth,lighthouse/nimbus-geth
+    - prysm/lighthouse-geth,prysm/prysm-geth,prysm/teku-geth,prysm/lodestar-geth,prysm/nimbus-geth
+    - teku/lighthouse-geth,teku/prysm-geth,teku/teku-geth,teku/lodestar-geth,teku/nimbus-geth
+    - lodestar/lighthouse-geth,lodestar/prysm-geth,lodestar/teku-geth,lodestar/lodestar-geth,lodestar/nimbus-geth
+    - nimbus/lighthouse-geth,nimbus/prysm-geth,nimbus/teku-geth,nimbus/lodestar-geth,nimbus/nimbus-geth
+    - grandine/lighthouse-geth,grandine/prysm-geth,grandine/teku-geth,grandine/lodestar-geth,grandine/nimbus-geth
+  assertoorTests:
+    - assertoor-tests/block-proposal-check.yaml
+
 
 # kubetest
 - id: "kubetest"
