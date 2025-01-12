@@ -319,6 +319,10 @@ jobs:
         echo "Your summary should not exceed 500 characters. Use easy language with technical details like client names. Avoid listing block numbers or timestamps." >> ./temp/chatgpt_query.txt
         echo "" >> ./temp/chatgpt_query.txt
 
+        echo "Client Pairs:" >> ./temp/chatgpt_query.txt
+        cat ./temp/clients_summary.txt >> ./temp/chatgpt_query.txt
+        echo "" >> ./temp/chatgpt_query.txt
+
         echo "$test_status" >> ./temp/chatgpt_query.txt
         echo "" >> ./temp/chatgpt_query.txt
         echo "Failed Test Task Status:" >> ./temp/chatgpt_query.txt
@@ -348,8 +352,6 @@ jobs:
         )
 
         query_json=$(echo "$query_json" | jq -c ".+=${chatgpt_extra_cfg}")
-        echo "Query JSON:"
-        echo $query_json | jq
 
         result=$(curl $chatgpt_url \
           -H "Content-Type: application/json" \
@@ -358,8 +360,13 @@ jobs:
         )
 
         echo "ChatGPT Summary:"
-        echo $result | jq -r ".choices[0].message.content"
-        echo $result | jq -r ".choices[0].message.content" > ./temp/chatgpt_summary.txt
+        summary="$(echo $result | jq -r ".choices[0].message.content")"
+        if [ "$summary" == "null" ]; then
+          echo "ChatGPT failed to generate a summary"
+          echo $result | jq
+        else
+          echo "$summary" > ./temp/chatgpt_summary.txt
+        fi
 
         echo "summary<<EOF" >> $GITHUB_OUTPUT
         echo $result | jq -r ".choices[0].message.content" >> $GITHUB_OUTPUT
