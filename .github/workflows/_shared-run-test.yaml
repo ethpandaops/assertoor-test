@@ -330,10 +330,11 @@ jobs:
         cp ./temp/chatgpt_query.txt $tempdir/chatgpt_query.txt
 
         export QUERY_TEXT=$(echo "$query_text" | jq -R -s '.')
+        export CHATGPT_MODEL=$chatgpt_model
         query_json=$(
         cat <<"EOF" | envsubst | jq -c
         {
-          "model": "$chatgpt_model",
+          "model": "$CHATGPT_MODEL",
           "messages": [
             {
               "role": "user",
