@@ -1,0 +1,47 @@
+
+on:
+  workflow_call:
+    outputs:
+      kurtosis_version:
+        description: "The latest version of the kurtosis cli (used as caching key)."
+        value: ${{ jobs.run_prepare.outputs.kurtosis_version }}
+
+jobs:
+  run_prepare:
+    name: "Prepare Docker cache"
+    runs-on: ubuntu-latest
+    outputs:
+      kurtosis_version: ${{ steps.kurtosis_version.outputs.kurtosis_version }}
+    steps:
+    - name: "Get kurtosis version"
+      id: kurtosis_version
+      shell: bash
+      run: |
+        kurtosis_version=$(curl -s https://api.github.com/repos/kurtosis-tech/kurtosis/releases/latest | jq -r .tag_name)
+        echo "kurtosis_version=$(echo "$kurtosis_version")" >> $GITHUB_OUTPUT
+    - name: Cache Docker images.
+      id: cache
+      uses: ScribeMD/docker-cache@0.5.0
+      with:
+        key: docker-${{ runner.os }}-${{ steps.kurtosis_version.outputs.kurtosis_version }}
+    
+    - name: "Generate dummy kurtosis config"
+      shell: bash
+      run: |
+        mkdir -p ./temp
+        echo "{\"participants\": []}" > ./temp/test-network.yaml
+
+    - name: Run kurtosis testnet for cache warmup
+      if: ${{ steps.cache.outputs.cache-hit == 'false' }}
+      continue-on-error: true
+      id: testnet
+      uses: ethpandaops/kurtosis-assertoor-github-action@v1
+      with:
+        kurtosis_extra_args: "--image-download always --non-blocking-tasks --verbosity DETAILED"
+        kurtosis_backend: docker
+        ethereum_package_branch: main
+        ethereum_package_args: "./temp/test-network.yaml"
+        enclave_name: "assertoor-warmup"
+        await_assertoor_tests: "false"
+        enclave_dump: "false"
+

@@ -14,6 +14,10 @@ on:
         type: string
         description: "Use ChatGPT to generate a summary of failed tests (default: false)."
         default: "false"
+      kurtosis_version:
+        type: string
+        description: "The latest version of the kurtosis cli (used as caching key)."
+        default: ""
     secrets:
       RANCHER_TOKEN:
         description: "The rancher token to login to the rancher server."
@@ -34,7 +38,6 @@ jobs:
       name: ${{ steps.config.outputs.name }}
       clients: ${{ steps.config.outputs.clients }}
       kurtosis: ${{ steps.config.outputs.kurtosis }}
-      kurtosis_version: ${{ steps.config.outputs.kurtosis_version }}
       kurtosis_branch: ${{ steps.config.outputs.kurtosis_branch }}
       worker: ${{ steps.config.outputs.worker }}
       backend: ${{ steps.config.outputs.backend }}
@@ -59,7 +62,6 @@ jobs:
         name="$(echo "$testcfg" | jq -r .name)"
         clients="$(echo "$testcfg" | jq -r .clients)"
         kurtosis="$(echo "$testcfg" | jq -r .kurtosis)"
-        kurtosis_version=$(curl -s https://api.github.com/repos/kurtosis-tech/kurtosis/releases/latest | jq -r .tag_name)
         kurtosis_branch="$(echo "$testcfg" | jq -r '.kurtosis_branch // ""')"
         worker="$(echo "$testcfg" | jq -c .worker)"
         backend="$(echo "$testcfg" | jq -r .backend)"
@@ -76,8 +78,6 @@ jobs:
         echo "clients=$(echo "$clients")" >> $GITHUB_OUTPUT
         echo "Kurtosis yaml: $kurtosis"
         echo "kurtosis=$(echo "$kurtosis")" >> $GITHUB_OUTPUT
-        echo "Kurtosis version: $kurtosis_version"
-        echo "kurtosis_version=$(echo "$kurtosis_version")" >> $GITHUB_OUTPUT
         echo "Kurtosis package branch: $kurtosis_branch"
         echo "kurtosis_branch=$(echo "$kurtosis_branch")" >> $GITHUB_OUTPUT
         echo "Worker: $worker"
@@ -141,7 +141,7 @@ jobs:
       pairs: ${{ matrix.pairs }}
       worker: ${{ needs.get_test.outputs.worker }}
       kurtosis: ${{ needs.get_test.outputs.kurtosis }}
-      kurtosis_version: ${{ needs.get_test.outputs.kurtosis_version }}
+      kurtosis_version: ${{ inputs.kurtosis_version }}
       kurtosis_branch: ${{ needs.get_test.outputs.kurtosis_branch }}
       backend: ${{ needs.get_test.outputs.backend }}
       kubeCluster: ${{ needs.get_test.outputs.kubernetes_cluster }}
