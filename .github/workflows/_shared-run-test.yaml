@@ -279,12 +279,6 @@ jobs:
         echo "dump_dir=$tempdir/dump" >> $GITHUB_OUTPUT
 
         kurtosis enclave dump $enclave_name
-    - name: Upload dump artifact
-      if: ${{ steps.enclave_dump.outputs.dump_dir != '' }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: "enclave-dump-assertoor-${{ github.run_id }}-${{ inputs.id }}"
-        path: "${{ steps.enclave_dump.outputs.dump_dir }}"
 
     - name: Generate failure summary via ChatGPT (on failure)
       if: ${{ steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt != 'false' }}
@@ -316,16 +310,24 @@ jobs:
           chatgpt_model=$(echo "$chatgpt_config" | jq -r ".model // \"$chatgpt_model\"")
         fi
 
+        touch ./temp/chatgpt_query.txt
+        echo "You will receive the test status & the last 200 lines of logs from the ethereum testnet testing tool assertoor." >> ./temp/chatgpt_query.txt
+        echo "The status & logs you get are from failed tests. Please find the error, which client caused it and try summarizing what went wrong for a first technical insight." >> ./temp/chatgpt_query.txt
+        echo "Assume that assertoor and the test are working fine, so it is probably a client causing problems." >> ./temp/chatgpt_query.txt
+        echo "Your summary should not exceed 500 characters. Use easy language with technical details like client names." >> ./temp/chatgpt_query.txt
+        echo "" >> ./temp/chatgpt_query.txt
+
         echo "$test_status" >> ./temp/chatgpt_query.txt
         echo "" >> ./temp/chatgpt_query.txt
         echo "Failed Test Task Status:" >> ./temp/chatgpt_query.txt
         echo "$failed_test_status" >> ./temp/chatgpt_query.txt
         echo "" >> ./temp/chatgpt_query.txt
 
-        tempdir="${{ runner.temp }}/assertoor-${{ github.run_id }}-${{ inputs.id }}"
-        tail -n 200 $tempdir/dump/assertoor-*/assertoor--*/output.log >> ./temp/chatgpt_query.txt
+        tempdir="${{ steps.enclave_dump.outputs.dump_dir }}"
+        tail -n 400 $tempdir/assertoor-*/assertoor--*/output.log >> ./temp/chatgpt_query.txt
 
         query_text="$(cat ./temp/chatgpt_query.txt)"
+        cp ./temp/chatgpt_query.txt $tempdir/chatgpt_query.txt
 
         export QUERY_TEXT=$(echo "$query_text" | jq -R -s '.')
         query_json=$(
@@ -333,10 +335,6 @@ jobs:
         {
           "model": "$chatgpt_model",
           "messages": [
-            {
-              "role": "system",
-              "content": "You will receive the test status & the last 200 lines of logs from the ethereum testnet testing tool assertoor. The status & logs you get are from failed tests. Please find the error, which client caused it and try summarizing what went wrong for a first technical insight. Assume that assertoor and the test are working fine, so it is probably a client causing problems. Your summary should be around 400 characters and may not exceed 700 characters. Use easy language with technical details like client names."
-            },
             {
               "role": "user",
               "content": $QUERY_TEXT
@@ -354,6 +352,7 @@ jobs:
 
         echo "ChatGPT Summary:"
         echo $result | jq -r ".choices[0].message.content"
+        echo $result | jq -r ".choices[0].message.content" > ./temp/chatgpt_summary.txt
 
         echo "summary<<EOF" >> $GITHUB_OUTPUT
         echo $result | jq -r ".choices[0].message.content" >> $GITHUB_OUTPUT
@@ -361,6 +360,13 @@ jobs:
 
       env:
         CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
+
+    - name: Upload dump artifact
+      if: ${{ steps.enclave_dump.outputs.dump_dir != '' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: "enclave-dump-assertoor-${{ github.run_id }}-${{ inputs.id }}"
+        path: "${{ steps.enclave_dump.outputs.dump_dir }}"
 
     - name: Send discord notification (on failure)
       if: ${{ (failure() || steps.test_result.outputs.result == 'failure') && inputs.send_notification == 'true' }}
