@@ -314,7 +314,7 @@ jobs:
         echo "You will receive the test status & the last 200 lines of logs from the ethereum testnet testing tool assertoor." >> ./temp/chatgpt_query.txt
         echo "The status & logs you get are from failed tests. Please find the error, which client caused it and try summarizing what went wrong for a first technical insight." >> ./temp/chatgpt_query.txt
         echo "Assume that assertoor and the test are working fine, so it is probably a client causing problems." >> ./temp/chatgpt_query.txt
-        echo "Your summary should not exceed 500 characters. Use easy language with technical details like client names." >> ./temp/chatgpt_query.txt
+        echo "Your summary should not exceed 500 characters. Use easy language with technical details like client names. Avoid listing block numbers or timestamps." >> ./temp/chatgpt_query.txt
         echo "" >> ./temp/chatgpt_query.txt
 
         echo "$test_status" >> ./temp/chatgpt_query.txt
@@ -395,8 +395,8 @@ jobs:
         else
           test_status=$(
           cat <<"EOF"
-          ${{ steps.test_result.outputs.test_overview }}
-          EOF
+        ${{ steps.test_result.outputs.test_overview }}
+        EOF
           )
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "$test_status" | grep "failure" >> $GITHUB_STEP_SUMMARY
