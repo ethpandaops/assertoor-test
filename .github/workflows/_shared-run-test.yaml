@@ -313,7 +313,7 @@ jobs:
         fi
 
         touch ./temp/chatgpt_query.txt
-        echo "You will receive the test status & the last 200 lines of logs from the ethereum testnet testing tool assertoor." >> ./temp/chatgpt_query.txt
+        echo "You will receive the test status & the last 300 lines of logs from the ethereum testnet testing tool assertoor." >> ./temp/chatgpt_query.txt
         echo "The status & logs you get are from failed tests. Please find the error, which client caused it and try summarizing what went wrong for a first technical insight." >> ./temp/chatgpt_query.txt
         echo "Assume that assertoor and the test are working fine, so it is probably a client causing problems." >> ./temp/chatgpt_query.txt
         echo "Your summary should not exceed 500 characters. Use easy language with technical details like client names. Avoid listing block numbers or timestamps." >> ./temp/chatgpt_query.txt
@@ -326,7 +326,7 @@ jobs:
         echo "" >> ./temp/chatgpt_query.txt
 
         tempdir="${{ steps.enclave_dump.outputs.dump_dir }}"
-        tail -n 400 $tempdir/assertoor-*/assertoor--*/output.log >> ./temp/chatgpt_query.txt
+        tail -n 300 $tempdir/assertoor-*/assertoor--*/output.log >> ./temp/chatgpt_query.txt
 
         query_text="$(cat ./temp/chatgpt_query.txt)"
         cp ./temp/chatgpt_query.txt $tempdir/chatgpt_query.txt
