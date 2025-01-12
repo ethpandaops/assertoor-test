@@ -1,4 +1,9 @@
-
+docker_cache_params:
+  enabled: true
+  url: "docker.ethquokkaops.io"
+  dockerhub_prefix: "/dh/"
+  github_prefix: "/gh/"
+  google_prefix: "/gcr/"
 network_params:
   deneb_fork_epoch: 0
   genesis_delay: 120

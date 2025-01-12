@@ -1,4 +1,10 @@
 
+docker_cache_params:
+  enabled: true
+  url: "docker.ethquokkaops.io"
+  dockerhub_prefix: "/dh/"
+  github_prefix: "/gh/"
+  google_prefix: "/gcr/"
 network_params:
   genesis_delay: 120
   min_validator_withdrawability_delay: 1
