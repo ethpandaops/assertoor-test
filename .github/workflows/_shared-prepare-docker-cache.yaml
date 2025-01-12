@@ -27,7 +27,7 @@ jobs:
       id: cache
       uses: ScribeMD/docker-cache@0.5.0
       with:
-        key: docker-${{ runner.os }}-${{ steps.kurtosis_version.outputs.kurtosis_version }}
+        key: kurtosis-docker-${{ runner.os }}-${{ steps.kurtosis_version.outputs.kurtosis_version }}
     
     - name: "Generate dummy kurtosis config"
       shell: bash
@@ -43,6 +43,7 @@ jobs:
       with:
         kurtosis_extra_args: "--image-download always --non-blocking-tasks --verbosity DETAILED"
         kurtosis_backend: docker
+        ethereum_package_url: github.com/pk910/kurtosis-dummy-pkg
         ethereum_package_branch: main
         ethereum_package_args: "./temp/test-network.yaml"
         enclave_name: "assertoor-warmup"
