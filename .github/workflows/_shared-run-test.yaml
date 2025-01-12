@@ -39,6 +39,10 @@ on:
         type: string
         description: "The kurtosis network config to use (default: kurtosis-config/default.yaml)."
         default: "kurtosis-config/default.yaml"
+      kurtosis_version:
+        type: string
+        description: "The latest version of the kurtosis cli (used as caching key)."
+        default: ""
       kurtosis_branch:
         type: string
         description: "The branch name for the kurtosis ethereum package to use (default: )."
@@ -74,6 +78,10 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
+    - name: Cache Docker images.
+      uses: ScribeMD/docker-cache@0.5.0
+      with:
+        key: docker-${{ runner.os }}-${{ inputs.kurtosis_version }}
     - name: "Install shell dependencies"
       shell: bash
       run: |
