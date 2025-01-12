@@ -23,13 +23,28 @@ jobs:
         echo "kurtosis_version=$kurtosis_version" >> $GITHUB_OUTPUT
 
         echo "Kurtosis version: $kurtosis_version"
+    - name: Check if cache key exists
+      id: check_cache
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        KEY="kurtosis-docker-${{ runner.os }}-${{ steps.kurtosis_version.outputs.kurtosis_version }}"
+        CACHE_HIT=$(gh cache list --repo ${{ github.repository }} --json "key" --key "$KEY" | jq -c ".[]" | wc -l)
+        if [ $CACHE_HIT -gt 0 ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+
     - name: Cache Docker images.
       id: cache
+      if: ${{ steps.check_cache.outputs.exists == 'false' }}
       uses: ScribeMD/docker-cache@0.5.0
       with:
         key: kurtosis-docker-${{ runner.os }}-${{ steps.kurtosis_version.outputs.kurtosis_version }}
     
     - name: "Generate dummy kurtosis config"
+      if: ${{ steps.check_cache.outputs.exists == 'false' }}
       shell: bash
       run: |
         mkdir -p ./temp
