@@ -323,12 +323,12 @@ jobs:
 
         touch ./temp/chatgpt_query.txt
         echo "You will receive the test status & the last 200 lines of logs from the ethereum testnet testing tool assertoor." >> ./temp/chatgpt_query.txt
-        echo "The status & logs you get are from failed tests. Please find the error, which client caused it and try summarizing what went wrong for a first technical insight." >> ./temp/chatgpt_query.txt
-        echo "Assume that assertoor and the test are working fine, so it is probably a client causing problems." >> ./temp/chatgpt_query.txt
+        echo "The status & logs you get are from failed tests. Please find the error, which clients caused it and try summarizing what went wrong for a first technical insight." >> ./temp/chatgpt_query.txt
+        echo "Assume that assertoor and the test are working fine, so it is probably one or multiple clients causing problems." >> ./temp/chatgpt_query.txt
         echo "Your summary should not exceed 500 characters. Use easy language with technical details like client names. Avoid listing block numbers or timestamps." >> ./temp/chatgpt_query.txt
         echo "" >> ./temp/chatgpt_query.txt
 
-        echo "Client Pairs:" >> ./temp/chatgpt_query.txt
+        echo "Client Pairs: (Format: <execution layer client>-<consensus layer client>[-<validator client>], validator client may be left out)" >> ./temp/chatgpt_query.txt
         cat ./temp/clients_summary.txt >> ./temp/chatgpt_query.txt
         echo "" >> ./temp/chatgpt_query.txt
 
