@@ -348,6 +348,8 @@ jobs:
         )
 
         query_json=$(echo "$query_json" | jq -c ".+=${chatgpt_extra_cfg}")
+        echo "Query JSON:"
+        echo $query_json | jq
 
         result=$(curl $chatgpt_url \
           -H "Content-Type: application/json" \
