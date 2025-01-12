@@ -304,10 +304,12 @@ jobs:
 
         chatgpt_url="https://api.openai.com/v1/chat/completions"
         chatgpt_model="gpt-4-turbo-preview"
+        chatgpt_extra_cfg=""
 
         if [ "$chatgpt_config" != "true" ]; then
           chatgpt_url=$(echo "$chatgpt_config" | jq -r ".url // \"$chatgpt_url\"")
           chatgpt_model=$(echo "$chatgpt_config" | jq -r ".model // \"$chatgpt_model\"")
+          chatgpt_extra_cfg=$(echo "$chatgpt_config" | jq -c ".extra_cfg // {}")
         fi
 
         touch ./temp/chatgpt_query.txt
@@ -344,6 +346,8 @@ jobs:
         }
         EOF
         )
+
+        query_json=$(echo "$query_json" | jq -c ".+=${chatgpt_extra_cfg}")
 
         result=$(curl $chatgpt_url \
           -H "Content-Type: application/json" \

@@ -41,7 +41,7 @@ jobs:
     with:
       config: ${{ toJSON(matrix.config) }}
       send_notification: "true"
-      use_chatgpt: '{"url": "${{ vars.CHATGPT_URL }}", "model": "${{ vars.CHATGPT_MODEL }}"}'
+      use_chatgpt: '{"url": "${{ vars.CHATGPT_URL }}", "model": "${{ vars.CHATGPT_MODEL }}", "extra_cfg": ${{ vars.CHATGPT_EXTRA_CFG }}}'
     secrets:
       RANCHER_URL: ${{ secrets.RANCHER_URL }}
       RANCHER_TOKEN: ${{ secrets.RANCHER_TOKEN }}
