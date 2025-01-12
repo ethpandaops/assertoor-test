@@ -13,12 +13,16 @@ jobs:
     outputs:
       kurtosis_version: ${{ steps.kurtosis_version.outputs.kurtosis_version }}
     steps:
-    - name: "Get kurtosis version"
+    - name: Get kurtosis version
       id: kurtosis_version
-      shell: bash
       run: |
-        kurtosis_version=$(curl -s https://api.github.com/repos/kurtosis-tech/kurtosis/releases/latest | jq -r .tag_name)
-        echo "kurtosis_version=$(echo "$kurtosis_version")" >> $GITHUB_OUTPUT
+        echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+        sudo apt update
+
+        kurtosis_version=$(apt show kurtosis-cli | grep Version | awk '{print $2}')
+        echo "kurtosis_version=$kurtosis_version" >> $GITHUB_OUTPUT
+
+        echo "Kurtosis version: $kurtosis_version"
     - name: Cache Docker images.
       id: cache
       uses: ScribeMD/docker-cache@0.5.0

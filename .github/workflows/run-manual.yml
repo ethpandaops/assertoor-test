@@ -86,6 +86,7 @@ jobs:
     needs: get_tests
     if: "${{ needs.get_tests.outputs.has_docker_tests == 'true' }}"
     uses: ./.github/workflows/_shared-prepare-docker-cache.yaml
+    name: "Prepare docker cache"
 
   run_tests:
     needs: [get_tests, prepare_cache]
