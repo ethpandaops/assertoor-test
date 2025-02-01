@@ -7,6 +7,7 @@ tests:
   name: "Test latest clients"
   clients: clients/latest-stable.yaml
   kurtosis: kurtosis-config/default.yaml
+  kurtosis_branch: pk910/support-large-contracts
   worker: ubuntu-latest
   backend: docker
   clientPairs:
