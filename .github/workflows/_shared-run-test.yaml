@@ -77,9 +77,9 @@ jobs:
     timeout-minutes: 1440
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Cache Docker images.
-      uses: ScribeMD/docker-cache@0.5.0
+      uses: ScribeMD/docker-cache@fb28c93772363301b8d0a6072ce850224b73f74e # 0.5.0
       with:
         key: kurtosis-docker-${{ runner.os }}-${{ inputs.kurtosis_version }}
         read-only: true
@@ -254,7 +254,7 @@ jobs:
 
     - name: Run kurtosis testnet
       id: testnet
-      uses: ethpandaops/kurtosis-assertoor-github-action@v1
+      uses: ethpandaops/kurtosis-assertoor-github-action@5932604b244dbd2ddb811516b516a9094f4d2c2f # v1
       with:
         kurtosis_extra_args: "--non-blocking-tasks --verbosity DETAILED"
         kurtosis_backend: ${{ inputs.backend }}
@@ -269,7 +269,7 @@ jobs:
     
     - name: Await assertoor test result
       id: test_result
-      uses: ethpandaops/assertoor-github-action@v1
+      uses: ethpandaops/assertoor-github-action@2c0747b6d798a3a646d4339c85258940b8fa66ff # v1
       if: ${{ fromJson(steps.testnet.outputs.services).assertoor.http.url != '' }}
       with:
         kurtosis_enclave_name: "assertoor-${{ github.run_id }}-${{ inputs.id }}"
@@ -386,7 +386,7 @@ jobs:
 
     - name: Upload dump artifact
       if: ${{ steps.enclave_dump.outputs.dump_dir != '' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
       with:
         name: "enclave-dump-assertoor-${{ github.run_id }}-${{ inputs.id }}"
         path: "${{ steps.enclave_dump.outputs.dump_dir }}"
