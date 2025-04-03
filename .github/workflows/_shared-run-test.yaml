@@ -244,7 +244,10 @@ jobs:
         )
         test_index=0
         while read assertoorTest; do
-          kurtosis_cfg="$(echo "$kurtosis_cfg" | yq ".assertoor_params.tests[$test_index]=\"$PUBURL/$assertoorTest\"")"
+          if [[ $assertoorTest != http* ]]; then
+            assertoorTest="$PUBURL/$assertoorTest"
+          fi
+          kurtosis_cfg="$(echo "$kurtosis_cfg" | yq ".assertoor_params.tests[$test_index]=\"$assertoorTest\"")"
           test_index=$(expr $test_index + 1)
         done <<< $(echo "$tests_json" | jq -r '.[]')
         echo "$kurtosis_cfg" > ./temp/test-network.yaml
