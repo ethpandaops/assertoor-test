@@ -81,7 +81,7 @@ tests:
 - id: "vc-compatibility-electra"
   schedule: false
   name: "Test validator client combinations with electra clients"
-  clients: clients/latest-stable.yaml
+  clients: clients/latest-dev.yaml
   kurtosis: kurtosis-config/default_electra_genesis.yaml
   worker: ubuntu-latest
   backend: docker
