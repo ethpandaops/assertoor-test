@@ -7,7 +7,7 @@ tests:
   name: "Test latest clients"
   clients: clients/latest-stable.yaml
   kurtosis: kurtosis-config/default.yaml
-  kurtosis_branch: pk910/support-large-contracts
+  kurtosis_branch: main
   worker: ubuntu-latest
   backend: docker
   clientPairs:
@@ -77,7 +77,7 @@ tests:
   assertoorTests:
     - assertoor-tests/block-proposal-check.yaml
 
-# Check validator client combinations with electra clients 
+# Check validator client combinations with electra clients
 - id: "vc-compatibility-electra"
   schedule: false
   name: "Test validator client combinations with electra clients"
