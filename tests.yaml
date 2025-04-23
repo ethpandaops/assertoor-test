@@ -8,7 +8,7 @@ tests:
   clients: clients/latest-stable.yaml
   kurtosis: kurtosis-config/default.yaml
   kurtosis_branch: main
-  worker: ubuntu-latest
+  worker: [self-hosted-ghr-size-l-x64]
   backend: docker
   clientPairs:
     # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
@@ -33,7 +33,14 @@ tests:
     - assertoor-tests/validator-slashing-test.yaml
     - assertoor-tests/dencun-opcodes-test.yaml
     - assertoor-tests/blob-transactions-test.yaml
-
+    - file: https://raw.githubusercontent.com/ethpandaops/assertoor/refs/heads/master/playbooks/pectra-dev/eip7002-all.yaml
+      config:
+        useExistingValidators: true
+        validatorStartIndex: 650
+    - file: https://raw.githubusercontent.com/ethpandaops/assertoor/refs/heads/master/playbooks/pectra-dev/eip7251-all.yaml
+      config:
+        useExistingValidators: true
+        validatorStartIndex: 680
 
 # Check validator client combinations
 - id: "vc-compatibility"

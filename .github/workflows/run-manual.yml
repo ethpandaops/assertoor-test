@@ -23,7 +23,7 @@ on:
 jobs:
   get_tests:
     name: "Load Tests"
-    runs-on: self-hosted-ghr-size-l-x64
+    runs-on: ubuntu-latest
     outputs:
       test_configs: ${{ steps.tests.outputs.test_configs }}
       has_docker_tests: ${{ steps.tests.outputs.has_docker_tests }}

@@ -39,8 +39,9 @@ jobs:
     - name: Cache Docker images.
       id: cache
       if: ${{ steps.check_cache.outputs.exists == 'false' }}
-      uses: ScribeMD/docker-cache@fb28c93772363301b8d0a6072ce850224b73f74e # 0.5.0
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # 4.2.3
       with:
+        path: ./docker-cache
         key: kurtosis-docker-${{ runner.os }}-${{ steps.kurtosis_version.outputs.kurtosis_version }}
     
     - name: "Generate dummy kurtosis config"
@@ -51,7 +52,7 @@ jobs:
         echo "{\"participants\": []}" > ./temp/test-network.yaml
 
     - name: Run kurtosis testnet for cache warmup
-      if: ${{ steps.cache.outputs.cache-hit == 'false' }}
+      if: ${{ steps.check_cache.outputs.exists == 'false' }}
       continue-on-error: true
       id: testnet
       uses: ethpandaops/kurtosis-assertoor-github-action@5932604b244dbd2ddb811516b516a9094f4d2c2f # v1
@@ -65,3 +66,12 @@ jobs:
         await_assertoor_tests: "false"
         enclave_dump: "false"
 
+    - name: "Cache docker images"
+      if: ${{ steps.check_cache.outputs.exists == 'false' }}
+      run: |
+        if [ ! -d ./docker-cache ]; then
+          mkdir -p ./docker-cache
+        fi
+        
+        docker_images=$(docker image list --format '{{ if ne .Repository "<none>" }}{{ .Repository }}{{ if ne .Tag "<none>" }}:{{ .Tag }}{{ end }}{{ else }}{{ .ID }}{{ end }}' | tr '\n' ' ')
+        docker save --output ./docker-cache/docker-images.tar $docker_images
