@@ -46,7 +46,7 @@ on:
       kurtosis_branch:
         type: string
         description: "The branch name for the kurtosis ethereum package to use (default: )."
-        default: ""
+        default: "5.0.1"
       assertoor_tests:
         type: string
         description: "The list of assertoor test files to run."
