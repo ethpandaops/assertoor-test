@@ -41,7 +41,7 @@ on:
         default: "kurtosis-config/default.yaml"
       kurtosis_version:
         type: string
-        description: "The latest version of the kurtosis cli (used as caching key)."
+        description: "The kurtosis version to use."
         default: ""
       kurtosis_branch:
         type: string
@@ -282,6 +282,7 @@ jobs:
       with:
         kurtosis_extra_args: "--non-blocking-tasks --verbosity DETAILED"
         kurtosis_backend: ${{ inputs.backend }}
+        kurtosis_version: ${{ inputs.kurtosis_version }}
         kubernetes_config: ${{ secrets.KUBECONFIG }}
         kubernetes_cluster: ${{ inputs.kubeCluster }}
         kubernetes_storage_class: ${{ inputs.kubeStorageClass }}

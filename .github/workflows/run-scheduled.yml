@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       test_configs: ${{ steps.tests.outputs.test_configs }}
-      has_docker_tests: ${{ steps.tests.outputs.has_docker_tests }}
+      kurtosis_versions: ${{ steps.tests.outputs.kurtosis_versions }}
     steps:
     - name: Checkout Repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -24,25 +24,39 @@ jobs:
       shell: bash
       run: |
         tests_file="tests.yaml"
-
         test_configs="$(cat $tests_file | yq -o json | jq '.tests' | jq -c 'map(select(.schedule == true))')"
+
+        kurtosis_versions="$(echo "$test_configs" | jq -c "[.[] | select(.backend == \"docker\") | .kurtosis_version // \"latest\"] | unique")"
+        if [ $(echo "$kurtosis_versions" | jq -c ".[] | select(. == \"latest\")" | wc -l) -gt 0 ]; then
+          # get latest kurtosis version
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/kurtosis.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+          latest_kurtosis_version=$(apt show kurtosis-cli | grep Version | awk '{print $2}')
+
+          test_configs=$(echo "$test_configs" | jq -c --arg latest_kurtosis_version "$latest_kurtosis_version" \
+            'map(if ((.kurtosis_version == "latest") or (.kurtosis_version == null)) and .backend == "docker" then .kurtosis_version = $latest_kurtosis_version else . end)')
+          kurtosis_versions=$(echo "$kurtosis_versions" | jq -c ". + [\"$latest_kurtosis_version\"] | [.[] | select(. != \"latest\")] | unique")
+        fi
+
         echo "test_configs<<EOF" >> $GITHUB_OUTPUT
         echo "$test_configs" >> $GITHUB_OUTPUT
         echo "$(echo "$test_configs" | jq)"
         echo "EOF" >> $GITHUB_OUTPUT
 
-        has_docker_tests="false"
-        if [ $(echo "$test_configs" | jq -c ".[] | select(.backend == \"docker\")" | wc -l) -gt 0 ]; then
-          has_docker_tests="true"
-        fi
-
-        echo "has_docker_tests=$has_docker_tests" >> $GITHUB_OUTPUT
+        echo "kurtosis_versions<<EOF" >> $GITHUB_OUTPUT
+        echo "$kurtosis_versions" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
 
   prepare_cache:
     needs: get_tests
-    if: "${{ needs.get_tests.outputs.has_docker_tests == 'true' }}"
+    name: "Warmup docker cache"
     uses: ./.github/workflows/_shared-prepare-docker-cache.yaml
-    name: "Prepare docker cache"
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJson(needs.get_tests.outputs.kurtosis_versions) }}
+    with:
+      kurtosis_version: ${{ matrix.version }}
 
   run_tests:
     needs: [get_tests, prepare_cache]

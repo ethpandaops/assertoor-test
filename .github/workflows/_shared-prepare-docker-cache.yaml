@@ -1,34 +1,23 @@
 
 on:
   workflow_call:
-    outputs:
+    inputs:
       kurtosis_version:
-        description: "The latest version of the kurtosis cli (used as caching key)."
-        value: ${{ jobs.run_prepare.outputs.kurtosis_version }}
+        type: string
+        description: "The kurtosis version to use."
+        default: ""
 
 jobs:
   run_prepare:
-    name: "Prepare Docker cache"
+    name: "Prepare Docker cache (${{ inputs.kurtosis_version }})"
     runs-on: ubuntu-latest
-    outputs:
-      kurtosis_version: ${{ steps.kurtosis_version.outputs.kurtosis_version }}
     steps:
-    - name: Get kurtosis version
-      id: kurtosis_version
-      run: |
-        echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-        sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/kurtosis.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
-
-        kurtosis_version=$(apt show kurtosis-cli | grep Version | awk '{print $2}')
-        echo "kurtosis_version=$kurtosis_version" >> $GITHUB_OUTPUT
-
-        echo "Kurtosis version: $kurtosis_version"
     - name: Check if cache key exists
       id: check_cache
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        KEY="kurtosis-docker-${{ runner.os }}-${{ steps.kurtosis_version.outputs.kurtosis_version }}"
+        KEY="kurtosis-docker-${{ runner.os }}-${{ inputs.kurtosis_version }}"
         CACHE_HIT=$(gh cache list --repo ${{ github.repository }} --json "key" --key "$KEY" | jq -c ".[]" | wc -l)
         if [ $CACHE_HIT -gt 0 ]; then
           echo "exists=true" >> $GITHUB_OUTPUT
@@ -42,7 +31,7 @@ jobs:
       uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # 4.2.3
       with:
         path: ./docker-cache
-        key: kurtosis-docker-${{ runner.os }}-${{ steps.kurtosis_version.outputs.kurtosis_version }}
+        key: kurtosis-docker-${{ runner.os }}-${{ inputs.kurtosis_version }}
     
     - name: "Generate dummy kurtosis config"
       if: ${{ steps.check_cache.outputs.exists == 'false' }}
@@ -59,6 +48,7 @@ jobs:
       with:
         kurtosis_extra_args: "--image-download always --non-blocking-tasks --verbosity DETAILED"
         kurtosis_backend: docker
+        kurtosis_version: ${{ inputs.kurtosis_version }}
         ethereum_package_url: github.com/pk910/kurtosis-dummy-pkg
         ethereum_package_branch: main
         ethereum_package_args: "./temp/test-network.yaml"

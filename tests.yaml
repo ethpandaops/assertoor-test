@@ -7,6 +7,7 @@ tests:
   name: "Test latest clients"
   clients: clients/latest-stable.yaml
   kurtosis: kurtosis-config/default.yaml
+  kurtosis_version: latest
   kurtosis_branch: "5.0.1"
   worker: [self-hosted-ghr-size-l-x64]
   backend: docker
@@ -48,6 +49,8 @@ tests:
   name: "Test validator client combinations"
   clients: clients/latest-dev.yaml
   kurtosis: kurtosis-config/default_without_snooper.yaml
+  kurtosis_version: 1.7.2
+  kurtosis_branch: "5.0.1"
   worker: ubuntu-latest
   backend: docker
   clientPairs:
