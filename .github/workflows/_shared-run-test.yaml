@@ -312,6 +312,8 @@ jobs:
         cd $tempdir/dump
         echo "dump_dir=$tempdir/dump" >> $GITHUB_OUTPUT
 
+        echo "dump_artifact=enclave-dump-assertoor-${{ github.run_id }}-${{ inputs.id }}" >> $GITHUB_OUTPUT
+
         kurtosis enclave dump $enclave_name
 
     - name: Generate failure summary via ChatGPT (on failure)
@@ -561,6 +563,14 @@ jobs:
         EOF
         )
 
+        summary_json="{}"
+        summary_json=$(echo "$summary_json" | jq -c --arg value "$test_result" '.test_result = $value')
+        summary_json=$(echo "$summary_json" | jq -c --arg value "$test_status" '.test_status = $value')
+        summary_json=$(echo "$summary_json" | jq -c --arg value "$failed_test_status" '.failed_test_status = $value')
+        summary_json=$(echo "$summary_json" | jq -c --arg value "$chatgpt_summary" '.chatgpt_summary = $value')
+        summary_json=$(echo "$summary_json" | jq -c --arg value "${{ steps.enclave_dump.outputs.dump_artifact }}" '.enclave_dump_artifact = $value')
+        echo "$summary_json" > ./temp/summary.json
+
         echo "Test Result:  $test_result"
         echo "$test_status"
 
@@ -582,4 +592,9 @@ jobs:
 
           exit 1 # fail action
         fi
+    - name: Upload summary artifact
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: "summary-${{ inputs.id }}"
+        path: "./temp/summary.json"
 

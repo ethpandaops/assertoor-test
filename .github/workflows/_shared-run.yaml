@@ -34,20 +34,24 @@ jobs:
       name: ${{ steps.config.outputs.name }}
       clients: ${{ steps.config.outputs.clients }}
       kurtosis: ${{ steps.config.outputs.kurtosis }}
+      kurtosis_version: ${{ steps.config.outputs.kurtosis_version }}
       kurtosis_branch: ${{ steps.config.outputs.kurtosis_branch }}
       worker: ${{ steps.config.outputs.worker }}
       backend: ${{ steps.config.outputs.backend }}
+      send_notification: ${{ steps.config.outputs.send_notification }}
       pairs: ${{ steps.config.outputs.pairs }}
       pairsidx: ${{ steps.config.outputs.pairsidx }}
       assertoor_tests: ${{ steps.config.outputs.assertoor_tests }}
       kubernetes_cluster: ${{ steps.config.outputs.kubernetes_cluster }}
       kubernetes_storageclass: ${{ steps.config.outputs.kubernetes_storageclass }}
       kubeconfig: ${{ steps.kubeconfig.outputs.kubeconfig }}
+      summary_script: ${{ steps.config.outputs.summary_script }}
     steps:
     - name: "Parse test configuration"
       id: config
       shell: bash
       run: |
+        send_notification="${{ inputs.send_notification }}"
         testcfg=$(
         cat <<"EOF"
         ${{ inputs.config }}
@@ -62,10 +66,12 @@ jobs:
         kurtosis_branch="$(echo "$testcfg" | jq -r '.kurtosis_branch // ""')"
         worker="$(echo "$testcfg" | jq -c .worker)"
         backend="$(echo "$testcfg" | jq -r .backend)"
+        skip_notifications="$(echo "$testcfg" | jq -r .skip_notifications)"
         kubernetes_cluster="$(echo "$testcfg" | jq -r .kubernetes.cluster)"
         kubernetes_storageclass="$(echo "$testcfg" | jq -r .kubernetes.storageClass)"
         pairs="$(echo "$testcfg" | jq -c .clientPairs)"
         assertoor_tests="$(echo "$testcfg" | jq -c .assertoorTests)"
+        summary_script="$(echo "$testcfg" | jq -c .summaryScript)"
 
         echo "ID: $id"
         echo "id=$(echo "$id")" >> $GITHUB_OUTPUT
@@ -92,6 +98,13 @@ jobs:
           echo "kubernetes_cluster=" >> $GITHUB_OUTPUT
           echo "kubernetes_storageclass=" >> $GITHUB_OUTPUT
         fi
+        if [ "$skip_notifications" == "true" ]; then
+          echo "Notifications: false"
+          echo "send_notification=false" >> $GITHUB_OUTPUT
+        else
+          echo "Notifications: $send_notification"
+          echo "send_notification=$send_notification" >> $GITHUB_OUTPUT
+        fi
         echo "Client Pairs:"
         echo "$pairs" | yq -P
         echo "pairs=$(echo "$pairs" | jq -c 'to_entries | map({pairs:.value, index:.key})')" >> $GITHUB_OUTPUT
@@ -99,6 +112,8 @@ jobs:
         echo "Assertoor Tests:"
         echo "$assertoor_tests" | yq -P
         echo "assertoor_tests=$(echo "$assertoor_tests")" >> $GITHUB_OUTPUT
+        echo "Summary Script: $summary_script"
+        echo "summary_script=$(echo "$summary_script")" >> $GITHUB_OUTPUT
 
     # Generate kubeconfig for kubernetes backend
     - name: "Install rancher CLI"
@@ -147,10 +162,48 @@ jobs:
       kubeStorageClass: ${{ needs.get_test.outputs.kubernetes_storageclass }}
       clients: ${{ needs.get_test.outputs.clients }}
       assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
-      send_notification: ${{ inputs.send_notification }}
+      send_notification: ${{ needs.get_test.outputs.send_notification }}
       use_chatgpt: ${{ inputs.use_chatgpt }}
     secrets:
       KUBECONFIG: ${{ needs.get_test.outputs.kubeconfig }}
       DISCORD_HOOK: ${{ secrets.DISCORD_HOOK }}
       CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
+
+  generate_summary:
+    name: "Generate Summary"
+    if: ${{ always() && needs.get_test.outputs.summary_script != '' }}
+    runs-on: ubuntu-latest
+    needs: [get_test, run_test]
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+    - name: Get summary artifacts
+      id: "summary_ids"
+      run: |
+        artifacts=$(gh api /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq '[.artifacts[] | {id, name}]')
+        summary_artifacts=$(echo "$artifacts" | jq -c --arg id "${{ needs.get_test.outputs.id }}" '[.[] | select(.name | test("^summary-" + $id + "-")) | .id]' | tr -d "[]")
+        echo "artifact_ids=$summary_artifacts" >> $GITHUB_OUTPUT
+        mkdir ./summaries
+      env:
+        GH_TOKEN: ${{ github.token }}
+    - name: Download summary artifacts
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      with:
+        artifact-ids: ${{ steps.summary_ids.outputs.artifact_ids }}
+        path: "./summaries"
+    - name: "Parse test configuration"
+      id: config
+      shell: bash
+      run: |
+        summary_script="${{ needs.get_test.outputs.summary_script }}"
+        pairs=$(
+        cat <<"EOF"
+        ${{ needs.get_test.outputs.pairs }}
+        EOF
+        )
+
+        if [ -f "$summary_script" ]; then
+          source $summary_script
+          generate_summary
+        fi
 
