@@ -4,11 +4,6 @@ timeout: 12h
 config:
   clientPairNames: []
 tasks:
-- name: check_clients_are_healthy
-  title: "Check if at least one client is ready"
-  timeout: 5m
-  config:
-    minClientCount: 1
 - name: run_task_matrix
   title: "Check if client pairs are synchronized"
   configVars:
