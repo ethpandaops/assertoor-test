@@ -49,7 +49,7 @@ tests:
   name: "Test validator client combinations"
   clients: clients/latest-dev.yaml
   kurtosis: kurtosis-config/default_without_snooper.yaml
-  kurtosis_branch: "5.0.1"
+  kurtosis_branch: "main"
   worker: ubuntu-latest
   backend: docker
   skip_notifications: true
@@ -57,7 +57,7 @@ tests:
     # EL: [geth]
     # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
     # VC: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
-    - lighthouse/lighthouse-geth,lighthouse/teku-geth,lighthouse/lodestar-geth,lighthouse/nimbus-geth  # excluded: lighthouse/prysm-geth
+    - lighthouse/lighthouse-geth,lighthouse/teku-geth,lighthouse/lodestar-geth,lighthouse/nimbus-geth,lighthouse/prysm-geth
     - prysm/lighthouse-geth,prysm/prysm-geth,prysm/teku-geth,prysm/lodestar-geth,prysm/nimbus-geth
     - teku/lighthouse-geth,teku/prysm-geth,teku/teku-geth,teku/lodestar-geth,teku/nimbus-geth
     - lodestar/lighthouse-geth,lodestar/prysm-geth,lodestar/teku-geth,lodestar/lodestar-geth,lodestar/nimbus-geth
