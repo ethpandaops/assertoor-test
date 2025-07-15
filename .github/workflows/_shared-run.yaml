@@ -14,6 +14,22 @@ on:
         type: string
         description: "Use ChatGPT to generate a summary of failed tests (default: false)."
         default: "false"
+      s3_bucket:
+        type: string
+        description: "The S3 bucket to use for the cache."
+        default: ""
+      s3_endpoint:
+        type: string
+        description: "The S3 endpoint to use for the cache."
+        default: ""
+      s3_insecure:
+        type: string
+        description: "Whether to use insecure S3 connection."
+        default: "false"
+      s3_path:
+        type: string
+        description: "The S3 path to use for the cache."
+        default: ""
     secrets:
       RANCHER_TOKEN:
         description: "The rancher token to login to the rancher server."
@@ -24,6 +40,12 @@ on:
         required: false
       CHATGPT_KEY:
         description: 'ChatGPT Key'
+        required: false
+      S3_ACCESS_KEY:
+        description: 'S3 Access Key'
+        required: false
+      S3_SECRET_KEY:
+        description: 'S3 Secret Key'
         required: false
 jobs:
   get_test:
@@ -164,10 +186,16 @@ jobs:
       assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
       send_notification: ${{ needs.get_test.outputs.send_notification }}
       use_chatgpt: ${{ inputs.use_chatgpt }}
+      s3_bucket: ${{ inputs.s3_bucket }}
+      s3_endpoint: ${{ inputs.s3_endpoint }}
+      s3_insecure: ${{ inputs.s3_insecure }}
+      s3_path: ${{ inputs.s3_path }}
     secrets:
       KUBECONFIG: ${{ needs.get_test.outputs.kubeconfig }}
       DISCORD_HOOK: ${{ secrets.DISCORD_HOOK }}
       CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
 
   generate_summary:
     name: "Generate Summary"

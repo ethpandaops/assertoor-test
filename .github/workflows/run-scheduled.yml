@@ -50,13 +50,25 @@ jobs:
   prepare_cache:
     needs: get_tests
     name: "Warmup docker cache"
-    uses: ./.github/workflows/_shared-prepare-docker-cache.yaml
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         version: ${{ fromJson(needs.get_tests.outputs.kurtosis_versions) }}
-    with:
-      kurtosis_version: ${{ matrix.version }}
+    steps:
+      - name: Warmup kurtosis docker cache (${{ matrix.version }})
+        continue-on-error: true
+        id: cache
+        uses: ethpandaops/kurtosis-cache-github-action@v1 # v1
+        with:
+          kurtosis_version: ${{ matrix.version }}
+          warmup_cache: true
+          warmup_only: true
+          cache_prefix: "kurtosis-docker"
+          s3_access_key: ${{ secrets.S3CACHE_ACCESS_KEY }}
+          s3_secret_key: ${{ secrets.S3CACHE_ACCESS_SECRET }}
+          s3_bucket: ${{ vars.S3CACHE_BUCKET }}
+          s3_endpoint: ${{ vars.S3CACHE_ENDPOINT }}
 
   run_tests:
     needs: [get_tests, prepare_cache]
@@ -70,8 +82,12 @@ jobs:
       config: ${{ toJSON(matrix.config) }}
       send_notification: "true"
       use_chatgpt: '{"url": "${{ vars.CHATGPT_URL }}", "model": "${{ vars.CHATGPT_MODEL }}", "extra_cfg": ${{ vars.CHATGPT_EXTRA_CFG }}}'
+      s3_bucket: ${{ vars.S3CACHE_BUCKET }}
+      s3_endpoint: ${{ vars.S3CACHE_ENDPOINT }}
     secrets:
       RANCHER_URL: ${{ secrets.RANCHER_URL }}
       RANCHER_TOKEN: ${{ secrets.RANCHER_TOKEN }}
       DISCORD_HOOK: ${{ secrets.DISCORD_WEBHOOK }}
       CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
+      S3_ACCESS_KEY: ${{ secrets.S3CACHE_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3CACHE_ACCESS_SECRET }}

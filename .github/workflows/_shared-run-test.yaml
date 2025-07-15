@@ -59,6 +59,22 @@ on:
         type: string
         description: "Use ChatGPT to summarize error (default: false)."
         default: "false"
+      s3_bucket:
+        type: string
+        description: "The S3 bucket to use for the cache."
+        default: ""
+      s3_endpoint:
+        type: string
+        description: "The S3 endpoint to use for the cache."
+        default: ""
+      s3_insecure:
+        type: string
+        description: "Whether to use insecure S3 connection."
+        default: "false"
+      s3_path:
+        type: string
+        description: "The S3 path to use for the cache."
+        default: ""
     secrets:
       KUBECONFIG:
         description: 'Kubernetes config'
@@ -68,6 +84,12 @@ on:
         required: false
       CHATGPT_KEY:
         description: 'ChatGPT Key'
+        required: false
+      S3_ACCESS_KEY:
+        description: 'S3 Access Key'
+        required: false
+      S3_SECRET_KEY:
+        description: 'S3 Secret Key'
         required: false
 
 jobs:
@@ -83,22 +105,6 @@ jobs:
       shell: bash
       run: |
         echo '${{ toJson(inputs) }}'
-    
-    - name: Load docker cache artifact (kurtosis-${{ inputs.kurtosis_version }})
-      if: ${{ inputs.backend == 'docker' }}
-      id: cache
-      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # 4.2.3
-      with:
-        path: ./docker-cache
-        key: kurtosis-docker-${{ runner.os }}-${{ inputs.kurtosis_version }}
-
-    - name: "Restore docker cache"
-      if: ${{ inputs.backend == 'docker' && steps.cache.outputs.cache-hit == 'true' }}
-      id: restore_cache
-      shell: bash
-      run: |
-        echo "Restoring docker cache..."
-        docker load -i ./docker-cache/docker-images.tar
 
     - name: "Install shell dependencies"
       shell: bash
@@ -276,13 +282,29 @@ jobs:
         echo ""
         cat ./temp/test-network.yaml
 
+    - name: Setup Kurtosis with docker cache
+      if: ${{ inputs.backend == 'docker' }}
+      continue-on-error: true
+      id: cache
+      uses: ethpandaops/kurtosis-cache-github-action@v1 # v1
+      with:
+        kurtosis_version: ${{ inputs.kurtosis_version }}
+        warmup_cache: false
+        cache_prefix: "kurtosis-docker"
+        s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
+        s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
+        s3_bucket: ${{ inputs.s3_bucket }}
+        s3_endpoint: ${{ inputs.s3_endpoint }}
+        s3_insecure: ${{ inputs.s3_insecure }}
+        s3_path: ${{ inputs.s3_path }}
+    
     - name: Run kurtosis testnet
       id: testnet
       uses: ethpandaops/kurtosis-assertoor-github-action@5932604b244dbd2ddb811516b516a9094f4d2c2f # v1
       with:
         kurtosis_extra_args: "--non-blocking-tasks --verbosity DETAILED"
         kurtosis_backend: ${{ inputs.backend }}
-        kurtosis_version: ${{ inputs.kurtosis_version }}
+        kurtosis_version: ${{ steps.cache.outputs.kurtosis_version || inputs.kurtosis_version }}
         kubernetes_config: ${{ secrets.KUBECONFIG }}
         kubernetes_cluster: ${{ inputs.kubeCluster }}
         kubernetes_storage_class: ${{ inputs.kubeStorageClass }}
