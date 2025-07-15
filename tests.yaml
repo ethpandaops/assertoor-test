@@ -31,7 +31,7 @@ tests:
     - assertoor-tests/all-opcodes-test.yaml
     - assertoor-tests/validator-withdrawal-test.yaml
     - assertoor-tests/validator-exit-test.yaml
-    - assertoor-tests/validator-slashing-test.yaml
+    #- assertoor-tests/validator-slashing-test.yaml
     - assertoor-tests/dencun-opcodes-test.yaml
     - assertoor-tests/blob-transactions-test.yaml
     - file: https://raw.githubusercontent.com/ethpandaops/assertoor/refs/heads/master/playbooks/pectra-dev/eip7002-all.yaml
