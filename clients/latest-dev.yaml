@@ -19,7 +19,7 @@ execution: # EL Clients
   geth:
     image: "ethereum/client-go:latest"
   nethermind: 
-    image: "nethermind/nethermind:master"
+    image: "nethermindeth/nethermind:master"
     params: ["--TxPool.BlobsSupport", "InMemory"]
   erigon:
     image: "erigontech/erigon:main-latest"
