@@ -260,6 +260,8 @@ jobs:
 
         export PUBURL="https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}"
         export ASSERTOOR_IMAGE="${{ inputs.assertoor_image }}"
+        
+        echo "Using ASSERTOOR_IMAGE: $ASSERTOOR_IMAGE"
 
         cp ./temp/participants.yaml ./temp/test-network.yaml
         cat $kurtosis_file | envsubst >> ./temp/test-network.yaml
@@ -284,6 +286,8 @@ jobs:
         done <<< $(echo "$tests_json" | jq -rc '.[]')
         echo "$kurtosis_cfg" > ./temp/test-network.yaml
 
+        echo "Final assertoor image in config:"
+        echo "$kurtosis_cfg" | yq '.assertoor_params.image'
         echo ""
         cat ./temp/test-network.yaml
 
