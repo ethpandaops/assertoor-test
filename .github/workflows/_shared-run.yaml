@@ -190,7 +190,6 @@ jobs:
       backend: ${{ needs.get_test.outputs.backend }}
       kubeCluster: ${{ needs.get_test.outputs.kubernetes_cluster }}
       kubeStorageClass: ${{ needs.get_test.outputs.kubernetes_storageclass }}
-      clients: ${{ needs.get_test.outputs.clients }}
       assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
       send_notification: ${{ needs.get_test.outputs.send_notification }}
       use_chatgpt: ${{ inputs.use_chatgpt }}
