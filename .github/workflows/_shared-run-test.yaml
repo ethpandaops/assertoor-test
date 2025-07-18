@@ -33,8 +33,8 @@ on:
         required: true
       clients:
         type: string
-        description: "The clients config to use (default: clients/latest.yaml)."
-        default: "clients/latest.yaml"
+        description: "The clients config to use (default: clients/latest-stable)."
+        default: "clients/latest-stable"
       kurtosis:
         type: string
         description: "The kurtosis network config to use (default: kurtosis-config/default.yaml)."
@@ -53,8 +53,8 @@ on:
         required: true
       assertoor_image:
         type: string
-        description: "The assertoor image to use (default: from kurtosis config)."
-        default: ""
+        description: "The assertoor image to use (default: ethpandaops/assertoor:master)."
+        default: "ethpandaops/assertoor:master"
       send_notification:
         type: string
         description: "Send discord notification on test failure (default: false)."
@@ -79,14 +79,6 @@ on:
         type: string
         description: "The S3 path to use for the cache."
         default: ""
-      clients:
-        type: string
-        description: "Override client images to use."
-        default: "clients/latest-stable"
-      assertoor_image:
-        type: string
-        description: "Override assertoor image to use."
-        default: "ethpandaops/assertoor:master"
     secrets:
       KUBECONFIG:
         description: 'Kubernetes config'
