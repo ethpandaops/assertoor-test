@@ -281,7 +281,7 @@ jobs:
             assertoorTest="\"$assertoorTest\""
           fi
           
-          kurtosis_cfg="$(echo "$kurtosis_cfg" | yq ".assertoor_params.tests[$test_index]=$assertoorTest")"
+          kurtosis_cfg="$(ASSERTOOR_IMAGE="${{ inputs.assertoor_image }}" echo "$kurtosis_cfg" | yq ".assertoor_params.tests[$test_index]=$assertoorTest")"
           test_index=$(expr $test_index + 1)
         done <<< $(echo "$tests_json" | jq -rc '.[]')
         echo "$kurtosis_cfg" > ./temp/test-network.yaml
