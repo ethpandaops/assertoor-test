@@ -19,6 +19,10 @@ on:
         description: 'Override kurtosis ethereum package branch to run this test with (eg. main)'
         default: ""
         type: string
+      overrideClientImages:
+        description: 'Override client images to use (eg. assertoor-test/clients/latest-stable)'
+        default: ""
+        type: string
 
 jobs:
   get_tests:
@@ -39,6 +43,7 @@ jobs:
         override_pairs="${{ inputs.overrideClientPairs }}"
         override_kurtosis_config="${{ inputs.overrideKurtosisConfig }}"
         override_kurtosis_branch="${{ inputs.overrideKurtosisBranch }}"
+        override_client_images="${{ inputs.overrideClientImages }}"
 
         test_configs="$(cat $tests_file | yq -o json | jq -c '.tests')"
 
@@ -68,6 +73,10 @@ jobs:
 
         if ! [ -z "$override_kurtosis_branch" ]; then
           test_configs="$(echo "$test_configs" | jq -c "(.[]).kurtosis_branch = \"$override_kurtosis_branch\"")"
+        fi
+
+        if ! [ -z "$override_client_images" ]; then
+          test_configs="$(echo "$test_configs" | jq -c "(.[]).client_images = \"$override_client_images\"")"
         fi
 
         kurtosis_versions="$(echo "$test_configs" | jq -c "[.[] | select(.backend == \"docker\") | .kurtosis_version // \"latest\"] | unique")"
