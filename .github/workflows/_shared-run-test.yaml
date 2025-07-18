@@ -33,8 +33,8 @@ on:
         required: true
       clients:
         type: string
-        description: "The clients config to use (default: clients/latest-stable)."
-        default: "clients/latest-stable"
+        description: "The clients config to use (default: clients/latest.yaml)."
+        default: "clients/latest.yaml"
       kurtosis:
         type: string
         description: "The kurtosis network config to use (default: kurtosis-config/default.yaml)."

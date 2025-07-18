@@ -33,7 +33,7 @@ on:
       clients:
         type: string
         description: "Override client images to use."
-        default: "clients/latest-stable"
+        default: "clients/latest.yaml"
       assertoor_image:
         type: string
         description: "Override assertoor image to use."
