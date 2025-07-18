@@ -6,7 +6,7 @@ consensus: # CL Clients
     image: "gcr.io/prysmaticlabs/prysm/beacon-chain:latest"
     vc_image: "gcr.io/prysmaticlabs/prysm/validator:latest"
   lighthouse: 
-    image: "ethpandaops/lighthouse:bbusa-empty-blob-schedule-8ae2f68"
+    image: "sigp/lighthouse:latest-unstable"
   nimbus:
     image: "ethpandaops/nimbus-eth2:unstable"
     vc_image: "ethpandaops/nimbus-validator-client:unstable"
