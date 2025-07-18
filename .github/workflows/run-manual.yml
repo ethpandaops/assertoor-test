@@ -19,6 +19,14 @@ on:
         description: 'Override kurtosis ethereum package branch to run this test with (eg. main)'
         default: ""
         type: string
+      overrideClientImages:
+        description: 'Override client images to use (eg. clients/latest-stable)'
+        default: "clients/latest-dev.yaml"
+        type: string
+      overrideAssertoorImage:
+        description: 'Override assertoor image to use (eg. ethpandaops/assertoor:latest)'
+        default: "ethpandaops/assertoor:master"
+        type: string
 
 jobs:
   get_tests:
@@ -127,6 +135,8 @@ jobs:
       use_chatgpt: '{"url": "${{ vars.CHATGPT_URL }}", "model": "${{ vars.CHATGPT_MODEL }}", "extra_cfg": ${{ vars.CHATGPT_EXTRA_CFG }}}'
       s3_bucket: ${{ vars.S3CACHE_BUCKET }}
       s3_endpoint: ${{ vars.S3CACHE_ENDPOINT }}
+      clients: ${{ inputs.overrideClientImages || 'clients/latest-dev.yaml' }}
+      assertoor_image: ${{ inputs.overrideAssertoorImage || 'ethpandaops/assertoor:master' }}
     secrets:
       RANCHER_URL: ${{ secrets.RANCHER_URL }}
       RANCHER_TOKEN: ${{ secrets.RANCHER_TOKEN }}

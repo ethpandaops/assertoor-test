@@ -30,6 +30,14 @@ on:
         type: string
         description: "The S3 path to use for the cache."
         default: ""
+      clients:
+        type: string
+        description: "Override client images to use."
+        default: "clients/latest-dev.yaml"
+      assertoor_image:
+        type: string
+        description: "Override assertoor image to use."
+        default: "ethpandaops/assertoor:master"
     secrets:
       RANCHER_TOKEN:
         description: "The rancher token to login to the rancher server."
@@ -182,7 +190,6 @@ jobs:
       backend: ${{ needs.get_test.outputs.backend }}
       kubeCluster: ${{ needs.get_test.outputs.kubernetes_cluster }}
       kubeStorageClass: ${{ needs.get_test.outputs.kubernetes_storageclass }}
-      clients: ${{ needs.get_test.outputs.clients }}
       assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
       send_notification: ${{ needs.get_test.outputs.send_notification }}
       use_chatgpt: ${{ inputs.use_chatgpt }}
@@ -190,6 +197,8 @@ jobs:
       s3_endpoint: ${{ inputs.s3_endpoint }}
       s3_insecure: ${{ inputs.s3_insecure }}
       s3_path: ${{ inputs.s3_path }}
+      clients: ${{ inputs.clients }}
+      assertoor_image: ${{ inputs.assertoor_image }}
     secrets:
       KUBECONFIG: ${{ needs.get_test.outputs.kubeconfig }}
       DISCORD_HOOK: ${{ secrets.DISCORD_HOOK }}
