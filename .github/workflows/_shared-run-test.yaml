@@ -259,9 +259,6 @@ jobs:
         fi
 
         export PUBURL="https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}"
-        export ASSERTOOR_IMAGE="${{ inputs.assertoor_image }}"
-        
-        echo "Using ASSERTOOR_IMAGE: $ASSERTOOR_IMAGE"
 
         cp ./temp/participants.yaml ./temp/test-network.yaml
         cat $kurtosis_file | envsubst >> ./temp/test-network.yaml
@@ -281,13 +278,19 @@ jobs:
             assertoorTest="\"$assertoorTest\""
           fi
           
-          kurtosis_cfg="$(ASSERTOOR_IMAGE="${{ inputs.assertoor_image }}" echo "$kurtosis_cfg" | yq ".assertoor_params.tests[$test_index]=$assertoorTest")"
+          kurtosis_cfg="$(echo "$kurtosis_cfg" | yq ".assertoor_params.tests[$test_index]=$assertoorTest")"
           test_index=$(expr $test_index + 1)
         done <<< $(echo "$tests_json" | jq -rc '.[]')
         echo "$kurtosis_cfg" > ./temp/test-network.yaml
 
-        echo "Final assertoor image in config:"
-        echo "$kurtosis_cfg" | yq '.assertoor_params.image'
+        # Override assertoor image if provided
+        assertoor_image="${{ inputs.assertoor_image }}"
+        if ! [ -z "$assertoor_image" ]; then
+          echo "Overriding assertoor image to: $assertoor_image"
+          kurtosis_cfg="$(cat ./temp/test-network.yaml | yq ".assertoor_params.image = \"$assertoor_image\"")"
+          echo "$kurtosis_cfg" > ./temp/test-network.yaml
+        fi
+
         echo ""
         cat ./temp/test-network.yaml
 
