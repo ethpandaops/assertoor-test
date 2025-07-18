@@ -33,11 +33,11 @@ on:
       clients:
         type: string
         description: "Override client images to use."
-        default: ""
+        default: "clients/latest-stable"
       assertoor_image:
         type: string
         description: "Override assertoor image to use."
-        default: ""
+        default: "ethpandaops/assertoor:master"
     secrets:
       RANCHER_TOKEN:
         description: "The rancher token to login to the rancher server."

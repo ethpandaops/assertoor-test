@@ -82,11 +82,11 @@ on:
       clients:
         type: string
         description: "Override client images to use."
-        default: ""
+        default: "clients/latest-stable"
       assertoor_image:
         type: string
         description: "Override assertoor image to use."
-        default: ""
+        default: "ethpandaops/assertoor:master"
     secrets:
       KUBECONFIG:
         description: 'Kubernetes config'
@@ -142,7 +142,7 @@ jobs:
       shell: bash
       id: clients
       run: |
-        clients_file="${{ inputs.clients || 'clients/latest.yaml' }}"
+        clients_file="${{ inputs.clients }}"
         kurtosis_file="${{ inputs.kurtosis }}"
         pairs="${{ inputs.pairs }}"
 
