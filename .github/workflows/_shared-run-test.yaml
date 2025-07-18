@@ -51,6 +51,10 @@ on:
         type: string
         description: "The list of assertoor test files to run."
         required: true
+      assertoor_image:
+        type: string
+        description: "The assertoor image to use (default: from kurtosis config)."
+        default: ""
       send_notification:
         type: string
         description: "Send discord notification on test failure (default: false)."
@@ -278,6 +282,14 @@ jobs:
           test_index=$(expr $test_index + 1)
         done <<< $(echo "$tests_json" | jq -rc '.[]')
         echo "$kurtosis_cfg" > ./temp/test-network.yaml
+
+        # Override assertoor image if provided
+        assertoor_image="${{ inputs.assertoor_image }}"
+        if ! [ -z "$assertoor_image" ]; then
+          echo "Overriding assertoor image to: $assertoor_image"
+          kurtosis_cfg="$(cat ./temp/test-network.yaml | yq ".assertoor_params.image = \"$assertoor_image\"")"
+          echo "$kurtosis_cfg" > ./temp/test-network.yaml
+        fi
 
         echo ""
         cat ./temp/test-network.yaml

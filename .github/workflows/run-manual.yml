@@ -20,8 +20,12 @@ on:
         default: ""
         type: string
       overrideClientImages:
-        description: 'Override client images to use (eg. assertoor-test/clients/latest-stable)'
-        default: ""
+        description: 'Override client images to use (eg. clients/latest-stable)'
+        default: "clients/latest-stable"
+        type: string
+      overrideAssertoorImage:
+        description: 'Override assertoor image to use (eg. ethpandaops/assertoor:latest)'
+        default: "ethpandaops/assertoor:master"
         type: string
 
 jobs:
@@ -44,6 +48,7 @@ jobs:
         override_kurtosis_config="${{ inputs.overrideKurtosisConfig }}"
         override_kurtosis_branch="${{ inputs.overrideKurtosisBranch }}"
         override_client_images="${{ inputs.overrideClientImages }}"
+        override_assertoor_image="${{ inputs.overrideAssertoorImage }}"
 
         test_configs="$(cat $tests_file | yq -o json | jq -c '.tests')"
 
@@ -77,6 +82,10 @@ jobs:
 
         if ! [ -z "$override_client_images" ]; then
           test_configs="$(echo "$test_configs" | jq -c "(.[]).client_images = \"$override_client_images\"")"
+        fi
+
+        if ! [ -z "$override_assertoor_image" ]; then
+          test_configs="$(echo "$test_configs" | jq -c "(.[]).assertoor_image = \"$override_assertoor_image\"")"
         fi
 
         kurtosis_versions="$(echo "$test_configs" | jq -c "[.[] | select(.backend == \"docker\") | .kurtosis_version // \"latest\"] | unique")"

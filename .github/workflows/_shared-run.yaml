@@ -64,6 +64,7 @@ jobs:
       pairs: ${{ steps.config.outputs.pairs }}
       pairsidx: ${{ steps.config.outputs.pairsidx }}
       assertoor_tests: ${{ steps.config.outputs.assertoor_tests }}
+      assertoor_image: ${{ steps.config.outputs.assertoor_image }}
       kubernetes_cluster: ${{ steps.config.outputs.kubernetes_cluster }}
       kubernetes_storageclass: ${{ steps.config.outputs.kubernetes_storageclass }}
       kubeconfig: ${{ steps.kubeconfig.outputs.kubeconfig }}
@@ -93,6 +94,7 @@ jobs:
         kubernetes_storageclass="$(echo "$testcfg" | jq -r .kubernetes.storageClass)"
         pairs="$(echo "$testcfg" | jq -c .clientPairs)"
         assertoor_tests="$(echo "$testcfg" | jq -c .assertoorTests)"
+        assertoor_image="$(echo "$testcfg" | jq -r '.assertoor_image // ""')"
         summary_script="$(echo "$testcfg" | jq -c .summaryScript)"
 
         echo "ID: $id"
@@ -134,6 +136,8 @@ jobs:
         echo "Assertoor Tests:"
         echo "$assertoor_tests" | yq -P
         echo "assertoor_tests=$(echo "$assertoor_tests")" >> $GITHUB_OUTPUT
+        echo "Assertoor Image: $assertoor_image"
+        echo "assertoor_image=$(echo "$assertoor_image")" >> $GITHUB_OUTPUT
         echo "Summary Script: $summary_script"
         echo "summary_script=$(echo "$summary_script")" >> $GITHUB_OUTPUT
 
@@ -184,6 +188,7 @@ jobs:
       kubeStorageClass: ${{ needs.get_test.outputs.kubernetes_storageclass }}
       clients: ${{ needs.get_test.outputs.clients }}
       assertoor_tests: ${{ needs.get_test.outputs.assertoor_tests }}
+      assertoor_image: ${{ needs.get_test.outputs.assertoor_image }}
       send_notification: ${{ needs.get_test.outputs.send_notification }}
       use_chatgpt: ${{ inputs.use_chatgpt }}
       s3_bucket: ${{ inputs.s3_bucket }}
