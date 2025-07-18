@@ -79,6 +79,14 @@ on:
         type: string
         description: "The S3 path to use for the cache."
         default: ""
+      clients:
+        type: string
+        description: "Override client images to use."
+        default: ""
+      assertoor_image:
+        type: string
+        description: "Override assertoor image to use."
+        default: ""
     secrets:
       KUBECONFIG:
         description: 'Kubernetes config'
@@ -134,7 +142,7 @@ jobs:
       shell: bash
       id: clients
       run: |
-        clients_file="${{ inputs.clients }}"
+        clients_file="${{ inputs.clients || 'clients/latest.yaml' }}"
         kurtosis_file="${{ inputs.kurtosis }}"
         pairs="${{ inputs.pairs }}"
 

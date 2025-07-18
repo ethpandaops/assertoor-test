@@ -47,8 +47,6 @@ jobs:
         override_pairs="${{ inputs.overrideClientPairs }}"
         override_kurtosis_config="${{ inputs.overrideKurtosisConfig }}"
         override_kurtosis_branch="${{ inputs.overrideKurtosisBranch }}"
-        override_client_images="${{ inputs.overrideClientImages }}"
-        override_assertoor_image="${{ inputs.overrideAssertoorImage }}"
 
         test_configs="$(cat $tests_file | yq -o json | jq -c '.tests')"
 
@@ -78,14 +76,6 @@ jobs:
 
         if ! [ -z "$override_kurtosis_branch" ]; then
           test_configs="$(echo "$test_configs" | jq -c "(.[]).kurtosis_branch = \"$override_kurtosis_branch\"")"
-        fi
-
-        if ! [ -z "$override_client_images" ]; then
-          test_configs="$(echo "$test_configs" | jq -c "(.[]).client_images = \"$override_client_images\"")"
-        fi
-
-        if ! [ -z "$override_assertoor_image" ]; then
-          test_configs="$(echo "$test_configs" | jq -c "(.[]).assertoor_image = \"$override_assertoor_image\"")"
         fi
 
         kurtosis_versions="$(echo "$test_configs" | jq -c "[.[] | select(.backend == \"docker\") | .kurtosis_version // \"latest\"] | unique")"
@@ -145,6 +135,8 @@ jobs:
       use_chatgpt: '{"url": "${{ vars.CHATGPT_URL }}", "model": "${{ vars.CHATGPT_MODEL }}", "extra_cfg": ${{ vars.CHATGPT_EXTRA_CFG }}}'
       s3_bucket: ${{ vars.S3CACHE_BUCKET }}
       s3_endpoint: ${{ vars.S3CACHE_ENDPOINT }}
+      clients: ${{ inputs.overrideClientImages }}
+      assertoor_image: ${{ inputs.overrideAssertoorImage }}
     secrets:
       RANCHER_URL: ${{ secrets.RANCHER_URL }}
       RANCHER_TOKEN: ${{ secrets.RANCHER_TOKEN }}
