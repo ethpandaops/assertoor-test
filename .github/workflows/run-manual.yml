@@ -21,7 +21,7 @@ on:
         type: string
       overrideClientImages:
         description: 'Override client images to use (eg. clients/latest-stable)'
-        default: "clients/latest.yaml"
+        default: "clients/latest-dev.yaml"
         type: string
       overrideAssertoorImage:
         description: 'Override assertoor image to use (eg. ethpandaops/assertoor:latest)'
