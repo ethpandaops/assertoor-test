@@ -89,6 +89,9 @@ on:
       CHATGPT_KEY:
         description: 'ChatGPT Key'
         required: false
+      OPENROUTER_API_KEY:
+        description: 'OpenRouter API Key'
+        required: false
       S3_ACCESS_KEY:
         description: 'S3 Access Key'
         required: false
@@ -444,6 +447,98 @@ jobs:
 
       env:
         CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+    - name: Check OpenRouter API key availability
+      if: ${{ steps.test_result.outputs.result == 'failure' }}
+      id: check_openrouter
+      shell: bash
+      run: |
+        if [ ! -z "$OPENROUTER_API_KEY" ]; then
+          echo "has_key=true" >> $GITHUB_OUTPUT
+        else
+          echo "has_key=false" >> $GITHUB_OUTPUT
+        fi
+      env:
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+    - name: Generate failure summary via OpenRouter/Gemini (on failure)
+      if: ${{ steps.test_result.outputs.result == 'failure' && steps.check_openrouter.outputs.has_key == 'true' }}
+      id: openrouter
+      shell: bash
+      run: |
+        test_status=$(
+        cat <<"EOF"
+        ${{ steps.test_result.outputs.test_overview }}
+        EOF
+        )
+        failed_test_status=$(
+        cat <<"EOF"
+        ${{ steps.test_result.outputs.failed_test_details }}
+        EOF
+        )
+
+        touch ./temp/openrouter_query.txt
+        echo "You will receive the test status & the last 200 lines of logs from the ethereum testnet testing tool assertoor." >> ./temp/openrouter_query.txt
+        echo "The status & logs you get are from failed tests. Please find the error, which clients caused it and try summarizing what went wrong for a first technical insight." >> ./temp/openrouter_query.txt
+        echo "Assume that assertoor and the test are working fine, so it is probably one or multiple clients causing problems." >> ./temp/openrouter_query.txt
+        echo "Your summary should not exceed 500 characters. Use easy language with technical details like client names. Avoid listing block numbers or timestamps." >> ./temp/openrouter_query.txt
+        echo "" >> ./temp/openrouter_query.txt
+
+        echo "Client Pairs: (Format: <execution layer client>-<consensus layer client>[-<validator client>], validator client may be left out)" >> ./temp/openrouter_query.txt
+        cat ./temp/clients_summary.txt >> ./temp/openrouter_query.txt
+        echo "" >> ./temp/openrouter_query.txt
+
+        echo "$test_status" >> ./temp/openrouter_query.txt
+        echo "" >> ./temp/openrouter_query.txt
+        echo "Failed Test Task Status:" >> ./temp/openrouter_query.txt
+        echo "$failed_test_status" >> ./temp/openrouter_query.txt
+        echo "" >> ./temp/openrouter_query.txt
+
+        tempdir="${{ steps.enclave_dump.outputs.dump_dir }}"
+        tail -n 200 $tempdir/assertoor-*/assertoor--*/output.log >> ./temp/openrouter_query.txt
+
+        query_text="$(cat ./temp/openrouter_query.txt)"
+        cp ./temp/openrouter_query.txt $tempdir/openrouter_query.txt
+
+        export QUERY_TEXT=$(echo "$query_text" | jq -R -s '.')
+        query_json=$(
+        cat <<"EOF" | envsubst | jq -c
+        {
+          "model": "google/gemini-2.0-flash-exp",
+          "messages": [
+            {
+              "role": "user",
+              "content": $QUERY_TEXT
+            }
+          ]
+        }
+        EOF
+        )
+
+        result=$(curl https://openrouter.ai/api/v1/chat/completions \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+          -H "HTTP-Referer: https://github.com/ethpandaops/assertoor-test" \
+          -H "X-Title: Assertoor Test Runner" \
+          -d "$query_json"
+        )
+
+        echo "OpenRouter/Gemini Summary:"
+        summary="$(echo $result | jq -r ".choices[0].message.content")"
+        if [ "$summary" == "null" ]; then
+          echo "OpenRouter/Gemini failed to generate a summary"
+          echo $result | jq
+        else
+          echo "$summary" > ./temp/openrouter_summary.txt
+        fi
+
+        echo "summary<<EOF" >> $GITHUB_OUTPUT
+        echo $result | jq -r ".choices[0].message.content" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+      env:
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
     - name: Upload dump artifact
       if: ${{ steps.enclave_dump.outputs.dump_dir != '' }}
@@ -498,6 +593,17 @@ jobs:
           echo "$chatgpt_summary" >> $GITHUB_STEP_SUMMARY
         fi
 
+        openrouter_summary=$(
+        cat <<"EOF"
+        ${{ steps.openrouter.outputs.summary }}
+        EOF
+        )
+        if ! [ -z "$openrouter_summary" ]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Summary (OpenRouter/Gemini)" >> $GITHUB_STEP_SUMMARY
+          echo "$openrouter_summary" >> $GITHUB_STEP_SUMMARY
+        fi
+
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "See job logs and artifacts for more details about this failure." >> $GITHUB_STEP_SUMMARY
 
@@ -546,6 +652,16 @@ jobs:
         if ! [ -z "$chatgpt_summary" ]; then
           echo "**Summary: (ChatGPT)**" >> ./temp/notification_text.txt
           echo "$chatgpt_summary" >> ./temp/notification_text.txt
+        fi
+
+        openrouter_summary=$(
+        cat <<"EOF"
+        ${{ steps.openrouter.outputs.summary }}
+        EOF
+        )
+        if ! [ -z "$openrouter_summary" ]; then
+          echo "**Summary: (OpenRouter/Gemini)**" >> ./temp/notification_text.txt
+          echo "$openrouter_summary" >> ./temp/notification_text.txt
         fi
 
         echo "Resolve job_id..."

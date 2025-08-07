@@ -142,5 +142,6 @@ jobs:
       RANCHER_TOKEN: ${{ secrets.RANCHER_TOKEN }}
       DISCORD_HOOK: ${{ secrets.DISCORD_WEBHOOK }}
       CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       S3_ACCESS_KEY: ${{ secrets.S3CACHE_ACCESS_KEY }}
       S3_SECRET_KEY: ${{ secrets.S3CACHE_ACCESS_SECRET }}
