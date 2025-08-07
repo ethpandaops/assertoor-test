@@ -8,7 +8,7 @@ tests:
   clients: clients/latest-stable.yaml
   kurtosis: kurtosis-config/default.yaml
   kurtosis_version: latest
-  kurtosis_branch: "5.0.1"
+  kurtosis_branch: "main"
   worker: [self-hosted-ghr-size-l-x64]
   backend: docker
   clientPairs:
