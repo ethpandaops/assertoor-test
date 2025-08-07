@@ -19,7 +19,8 @@ execution: # EL Clients
   geth:
     image: "ethereum/client-go:latest"
   nethermind: 
-    image: "nethermindeth/nethermind:master"
+    # Using fusaka-devnet-3 image due to bugs in latest/master builds
+    image: "docker.ethquokkaops.io/dh/ethpandaops/nethermind:fusaka-devnet-3"
     params: ["--TxPool.BlobsSupport", "InMemory"]
   erigon:
     image: "erigontech/erigon:main-latest"

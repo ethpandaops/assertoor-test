@@ -1,0 +1,28 @@
+consensus: # CL Clients
+  teku: 
+    image: "docker.ethquokkaops.io/dh/ethpandaops/teku:fusaka-devnet-3"
+  prysm:
+    image: "docker.ethquokkaops.io/dh/ethpandaops/prysm-beacon-chain:fusaka-devnet-3"
+    vc_image: "docker.ethquokkaops.io/dh/ethpandaops/prysm-validator:fusaka-devnet-3"
+  lighthouse: 
+    image: "docker.ethquokkaops.io/dh/ethpandaops/lighthouse:fusaka-devnet-3"
+  nimbus:
+    image: "docker.ethquokkaops.io/dh/ethpandaops/nimbus-eth2:fusaka-devnet-3"
+  lodestar:
+    image: "docker.ethquokkaops.io/dh/ethpandaops/lodestar:fusaka-devnet-3"
+  grandine:
+    image: "docker.ethquokkaops.io/dh/ethpandaops/grandine:fusaka-devnet-3"
+
+execution: # EL Clients
+  geth:
+    image: "docker.ethquokkaops.io/dh/ethpandaops/geth:fusaka-devnet-3"
+  nethermind: 
+    # Using fusaka-devnet-3 image as placeholder due to BPO parsing issue
+    image: "docker.ethquokkaops.io/dh/ethpandaops/nethermind:fusaka-devnet-3"
+    params: ["--TxPool.BlobsSupport", "InMemory"]
+  erigon:
+    image: "docker.ethquokkaops.io/dh/ethpandaops/erigon:fusaka-devnet-3"
+  besu:
+    image: "docker.ethquokkaops.io/dh/ethpandaops/besu:fusaka-devnet-3"
+  reth:
+    image: "docker.ethquokkaops.io/dh/ethpandaops/reth:fusaka-devnet-3"

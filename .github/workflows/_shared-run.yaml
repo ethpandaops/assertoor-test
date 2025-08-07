@@ -49,6 +49,9 @@ on:
       CHATGPT_KEY:
         description: 'ChatGPT Key'
         required: false
+      OPENROUTER_API_KEY:
+        description: 'OpenRouter API Key'
+        required: false
       S3_ACCESS_KEY:
         description: 'S3 Access Key'
         required: false
@@ -203,6 +206,7 @@ jobs:
       KUBECONFIG: ${{ needs.get_test.outputs.kubeconfig }}
       DISCORD_HOOK: ${{ secrets.DISCORD_HOOK }}
       CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
       S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
 
