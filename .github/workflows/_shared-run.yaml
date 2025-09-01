@@ -217,7 +217,7 @@ jobs:
     needs: [get_test, run_test]
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
     - name: Get summary artifacts
       id: "summary_ids"
       run: |
@@ -228,7 +228,7 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
     - name: Download summary artifacts
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
       with:
         artifact-ids: ${{ steps.summary_ids.outputs.artifact_ids }}
         path: "./summaries"
