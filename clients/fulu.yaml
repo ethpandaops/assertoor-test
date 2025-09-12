@@ -1,28 +1,27 @@
 consensus: # CL Clients
   teku: 
-    image: "docker.ethquokkaops.io/dh/ethpandaops/teku:fusaka-devnet-3"
+    image: "ethpandaops/teku:master"
   prysm:
-    image: "docker.ethquokkaops.io/dh/ethpandaops/prysm-beacon-chain:fusaka-devnet-3"
-    vc_image: "docker.ethquokkaops.io/dh/ethpandaops/prysm-validator:fusaka-devnet-3"
+    image: "ethpandaops/prysm-beacon-chain:develop"
+    vc_image: "ethpandaops/prysm-validator:develop"
   lighthouse: 
-    image: "docker.ethquokkaops.io/dh/ethpandaops/lighthouse:fusaka-devnet-3"
+    image: "ethpandaops/lighthouse:unstable"
   nimbus:
-    image: "docker.ethquokkaops.io/dh/ethpandaops/nimbus-eth2:fusaka-devnet-3"
+    image: "ethpandaops/nimbus-eth2:unstable"
   lodestar:
-    image: "docker.ethquokkaops.io/dh/ethpandaops/lodestar:fusaka-devnet-3"
+    image: "ethpandaops/lodestar:unstable"
   grandine:
-    image: "docker.ethquokkaops.io/dh/ethpandaops/grandine:fusaka-devnet-3"
+    image: "ethpandaops/grandine:develop"
 
 execution: # EL Clients
   geth:
-    image: "docker.ethquokkaops.io/dh/ethpandaops/geth:fusaka-devnet-3"
+    image: "ethpandaops/geth:master"
   nethermind: 
-    # Using fusaka-devnet-3 image as placeholder due to BPO parsing issue
-    image: "docker.ethquokkaops.io/dh/ethpandaops/nethermind:fusaka-devnet-3"
+    image: "ethpandaops/nethermind:master"
     params: ["--TxPool.BlobsSupport", "InMemory"]
   erigon:
-    image: "docker.ethquokkaops.io/dh/ethpandaops/erigon:fusaka-devnet-3"
+    image: "ethpandaops/erigon:main"
   besu:
-    image: "docker.ethquokkaops.io/dh/ethpandaops/besu:fusaka-devnet-3"
+    image: "ethpandaops/besu:main"
   reth:
-    image: "docker.ethquokkaops.io/dh/ethpandaops/reth:fusaka-devnet-3"
+    image: "ethpandaops/reth:main"

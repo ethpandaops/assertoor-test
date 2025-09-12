@@ -3,9 +3,9 @@ consensus: # CL Clients
   teku: 
     image: "consensys/teku:develop"
   prysm:
-    image: "gcr.io/prysmaticlabs/prysm/beacon-chain:latest"
-    vc_image: "gcr.io/prysmaticlabs/prysm/validator:latest"
-  lighthouse: 
+    image: "ethpandaops/prysm-beacon-chain:develop"
+    vc_image: "ethpandaops/validator:develop"
+  lighthouse:
     image: "sigp/lighthouse:latest-unstable"
   nimbus:
     image: "ethpandaops/nimbus-eth2:unstable"
@@ -18,7 +18,7 @@ consensus: # CL Clients
 execution: # EL Clients
   geth:
     image: "ethereum/client-go:latest"
-  nethermind: 
+  nethermind:
     # Using fusaka-devnet-3 image due to bugs in latest/master builds
     image: "docker.ethquokkaops.io/dh/ethpandaops/nethermind:fusaka-devnet-3"
     params: ["--TxPool.BlobsSupport", "InMemory"]
