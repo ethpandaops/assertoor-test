@@ -71,15 +71,15 @@ jobs:
         fi
 
         if ! [ -z "$override_pairs" ]; then
-          test_configs="$(echo "$test_configs" | jq -c "(.[]).clientPairs |= [\"$override_pairs\"]")"
+          test_configs="$(echo "$test_configs" | jq -c "map(.clientPairs = [\"$override_pairs\"])")"
         fi
 
         if ! [ -z "$override_kurtosis_config" ]; then
-          test_configs="$(echo "$test_configs" | jq -c "(.[]).kurtosis = \"$override_kurtosis_config\"")"
+          test_configs="$(echo "$test_configs" | jq -c "map(.kurtosis = \"$override_kurtosis_config\")")"
         fi
 
         if ! [ -z "$override_kurtosis_branch" ]; then
-          test_configs="$(echo "$test_configs" | jq -c "(.[]).kurtosis_branch = \"$override_kurtosis_branch\"")"
+          test_configs="$(echo "$test_configs" | jq -c "map(.kurtosis_branch = \"$override_kurtosis_branch\")")"
         fi
 
         kurtosis_versions="$(echo "$test_configs" | jq -c "[.[] | select(.backend == \"docker\") | .kurtosis_version // \"latest\"] | unique")"
