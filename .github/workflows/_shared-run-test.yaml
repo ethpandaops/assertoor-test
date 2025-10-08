@@ -505,7 +505,7 @@ jobs:
         query_json=$(
         cat <<"EOF" | envsubst | jq -c
         {
-          "model": "google/gemini-2.0-flash-exp",
+          "model": "anthropic/claude-sonnet-4.5",
           "messages": [
             {
               "role": "user",
