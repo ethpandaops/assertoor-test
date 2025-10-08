@@ -27,6 +27,10 @@ on:
         description: 'Override assertoor image to use (eg. ethpandaops/assertoor:latest)'
         default: "ethpandaops/assertoor:master"
         type: string
+      sendNotification:
+        description: 'Send Discord notification on test failure'
+        default: "false"
+        type: string
 
 jobs:
   get_tests:
@@ -103,6 +107,7 @@ jobs:
     needs: get_tests
     name: "Warmup docker cache"
     runs-on: ubuntu-latest
+    if: ${{ needs.get_tests.outputs.kurtosis_versions != '[]' }}
     strategy:
       fail-fast: false
       matrix:
@@ -124,6 +129,7 @@ jobs:
 
   run_tests:
     needs: [get_tests, prepare_cache]
+    if: ${{ !cancelled() && needs.get_tests.outputs.test_configs != '[]' }}
     uses: ./.github/workflows/_shared-run.yaml
     name: "${{ matrix.config.name }}"
     strategy:
@@ -132,6 +138,7 @@ jobs:
         config: ${{ fromJson(needs.get_tests.outputs.test_configs) }}
     with:
       config: ${{ toJSON(matrix.config) }}
+      send_notification: ${{ inputs.sendNotification || 'false' }}
       use_chatgpt: '{"url": "${{ vars.CHATGPT_URL }}", "model": "${{ vars.CHATGPT_MODEL }}", "extra_cfg": ${{ vars.CHATGPT_EXTRA_CFG }}}'
       s3_bucket: ${{ vars.S3CACHE_BUCKET }}
       s3_endpoint: ${{ vars.S3CACHE_ENDPOINT }}

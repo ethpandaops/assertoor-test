@@ -51,6 +51,7 @@ jobs:
     needs: get_tests
     name: "Warmup docker cache"
     runs-on: ubuntu-latest
+    if: ${{ needs.get_tests.outputs.kurtosis_versions != '[]' }}
     strategy:
       fail-fast: false
       matrix:
@@ -72,6 +73,7 @@ jobs:
 
   run_tests:
     needs: [get_tests, prepare_cache]
+    if: ${{ !cancelled() && needs.get_tests.outputs.test_configs != '[]' }}
     uses: ./.github/workflows/_shared-run.yaml
     name: "${{ matrix.config.name }}"
     strategy:
