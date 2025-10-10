@@ -19,6 +19,18 @@ on:
         description: 'Override kurtosis ethereum package branch to run this test with (eg. main)'
         default: ""
         type: string
+      overrideClientImages:
+        description: 'Override client images to use (eg. clients/latest-stable)'
+        default: "clients/latest-dev.yaml"
+        type: string
+      overrideAssertoorImage:
+        description: 'Override assertoor image to use (eg. ethpandaops/assertoor:latest)'
+        default: "ethpandaops/assertoor:master"
+        type: string
+      sendNotification:
+        description: 'Send Discord notification on test failure'
+        default: "false"
+        type: string
 
 jobs:
   get_tests:
@@ -29,7 +41,7 @@ jobs:
       kurtosis_versions: ${{ steps.tests.outputs.kurtosis_versions }}
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
     - name: "Load test configurations from tests.yaml"
       id: tests
       shell: bash
@@ -59,15 +71,15 @@ jobs:
         fi
 
         if ! [ -z "$override_pairs" ]; then
-          test_configs="$(echo "$test_configs" | jq -c "(.[]).clientPairs |= [\"$override_pairs\"]")"
+          test_configs="$(echo "$test_configs" | jq -c "map(.clientPairs = [\"$override_pairs\"])")"
         fi
 
         if ! [ -z "$override_kurtosis_config" ]; then
-          test_configs="$(echo "$test_configs" | jq -c "(.[]).kurtosis = \"$override_kurtosis_config\"")"
+          test_configs="$(echo "$test_configs" | jq -c "map(.kurtosis = \"$override_kurtosis_config\")")"
         fi
 
         if ! [ -z "$override_kurtosis_branch" ]; then
-          test_configs="$(echo "$test_configs" | jq -c "(.[]).kurtosis_branch = \"$override_kurtosis_branch\"")"
+          test_configs="$(echo "$test_configs" | jq -c "map(.kurtosis_branch = \"$override_kurtosis_branch\")")"
         fi
 
         kurtosis_versions="$(echo "$test_configs" | jq -c "[.[] | select(.backend == \"docker\") | .kurtosis_version // \"latest\"] | unique")"
@@ -95,6 +107,7 @@ jobs:
     needs: get_tests
     name: "Warmup docker cache"
     runs-on: ubuntu-latest
+    if: ${{ needs.get_tests.outputs.kurtosis_versions != '[]' }}
     strategy:
       fail-fast: false
       matrix:
@@ -116,6 +129,7 @@ jobs:
 
   run_tests:
     needs: [get_tests, prepare_cache]
+    if: ${{ !cancelled() && needs.get_tests.outputs.test_configs != '[]' }}
     uses: ./.github/workflows/_shared-run.yaml
     name: "${{ matrix.config.name }}"
     strategy:
@@ -124,13 +138,17 @@ jobs:
         config: ${{ fromJson(needs.get_tests.outputs.test_configs) }}
     with:
       config: ${{ toJSON(matrix.config) }}
+      send_notification: ${{ inputs.sendNotification || 'false' }}
       use_chatgpt: '{"url": "${{ vars.CHATGPT_URL }}", "model": "${{ vars.CHATGPT_MODEL }}", "extra_cfg": ${{ vars.CHATGPT_EXTRA_CFG }}}'
       s3_bucket: ${{ vars.S3CACHE_BUCKET }}
       s3_endpoint: ${{ vars.S3CACHE_ENDPOINT }}
+      clients: ${{ inputs.overrideClientImages || 'clients/latest-dev.yaml' }}
+      assertoor_image: ${{ inputs.overrideAssertoorImage || 'ethpandaops/assertoor:master' }}
     secrets:
       RANCHER_URL: ${{ secrets.RANCHER_URL }}
       RANCHER_TOKEN: ${{ secrets.RANCHER_TOKEN }}
       DISCORD_HOOK: ${{ secrets.DISCORD_WEBHOOK }}
       CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       S3_ACCESS_KEY: ${{ secrets.S3CACHE_ACCESS_KEY }}
       S3_SECRET_KEY: ${{ secrets.S3CACHE_ACCESS_SECRET }}

@@ -1,0 +1,27 @@
+consensus: # CL Clients
+  teku: 
+    image: "ethpandaops/teku:master"
+  prysm:
+    image: "ethpandaops/prysm-beacon-chain:develop"
+    vc_image: "ethpandaops/prysm-validator:develop"
+  lighthouse: 
+    image: "ethpandaops/lighthouse:unstable"
+  nimbus:
+    image: "ethpandaops/nimbus-eth2:unstable"
+  lodestar:
+    image: "ethpandaops/lodestar:unstable"
+  grandine:
+    image: "ethpandaops/grandine:develop"
+
+execution: # EL Clients
+  geth:
+    image: "ethpandaops/geth:master"
+  nethermind: 
+    image: "ethpandaops/nethermind:master"
+    params: ["--TxPool.BlobsSupport", "InMemory"]
+  erigon:
+    image: "ethpandaops/erigon:main"
+  besu:
+    image: "ethpandaops/besu:main"
+  reth:
+    image: "ethpandaops/reth:main"
