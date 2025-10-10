@@ -1,31 +1,30 @@
 
 consensus: # CL Clients
-  teku: 
-    image: "consensys/teku:develop"
+  teku:
+    image: "ethpandaops/teku:master"
   prysm:
     image: "ethpandaops/prysm-beacon-chain:develop"
-    vc_image: "ethpandaops/validator:develop"
+    vc_image: "ethpandaops/prysm-validator:develop"
   lighthouse:
-    image: "sigp/lighthouse:latest-unstable"
+    image: "ethpandaops/lighthouse:unstable"
   nimbus:
     image: "ethpandaops/nimbus-eth2:unstable"
     vc_image: "ethpandaops/nimbus-validator-client:unstable"
   lodestar:
-    image: "chainsafe/lodestar:next"
+    image: "ethpandaops/lodestar:unstable"
   grandine:
     image: "ethpandaops/grandine:develop"
 
 execution: # EL Clients
   geth:
-    image: "ethereum/client-go:latest"
+    image: "ethpandaops/geth:master"
   nethermind:
-    # Using fusaka-devnet-3 image due to bugs in latest/master builds
-    image: "docker.ethquokkaops.io/dh/ethpandaops/nethermind:fusaka-devnet-3"
+    image: "ethpandaops/nethermind:master"
     params: ["--TxPool.BlobsSupport", "InMemory"]
   erigon:
-    image: "erigontech/erigon:main-latest"
+    image: "ethpandaops/erigon:main"
   besu:
-    image: "ethpandaops/besu::^main-[0-9a-f]{7}$"
+    image: "ethpandaops/besu:main"
   reth:
     image: "ethpandaops/reth:main"
 
