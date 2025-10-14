@@ -153,6 +153,15 @@ jobs:
             if [ ! -z "$(echo "$1" | grep -E '^.*::.*$')" ]; then
               repository=$(echo "$1" | sed 's/^\(.*\)::\(.*\)$/\1/')
               tag_pattern=$(echo "$1" | sed 's/^\(.*\)::\(.*\)$/\2/')
+
+              # Only resolve Docker Hub images (no registry prefix or docker.io prefix)
+              # Skip GCR (gcr.io), GHCR (ghcr.io), and other registries
+              if [[ "$repository" =~ ^(gcr\.io|ghcr\.io|[a-z0-9\-]+\.io|[a-z0-9\-]+\.[a-z0-9\-]+)/ ]]; then
+                echo "Warning: Image pattern '${1}' uses non-Docker-Hub registry. Pattern matching only works with Docker Hub images." >&2
+                echo "$1"
+                return
+              fi
+
               while read tag; do
                 if [ ! -z "$(echo "$tag" | grep -E $tag_pattern)" ]; then
                   image="${repository}:${tag}"
