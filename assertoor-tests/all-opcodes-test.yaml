@@ -139,7 +139,7 @@ tasks:
     gasLimit: 100000
     contractDeployment: true
     callData: "006000388082803990f3"
-    awaitReceipt: false
+    awaitReceipt: true
   configVars:
     privateKey: "walletPrivkey"
 - name: generate_transaction
@@ -149,7 +149,7 @@ tasks:
     gasLimit: 100000
     contractDeployment: true
     callData: "61053960005260206000f3"
-    awaitReceipt: false
+    awaitReceipt: true
   configVars:
     privateKey: "walletPrivkey"
 - name: generate_transaction
@@ -159,7 +159,7 @@ tasks:
     gasLimit: 100000
     contractDeployment: true
     callData: "61053960005260206000fd"
-    awaitReceipt: false
+    awaitReceipt: true
   configVars:
     privateKey: "walletPrivkey"
 - name: generate_transaction
@@ -169,7 +169,7 @@ tasks:
     gasLimit: 100000
     contractDeployment: true
     callData: "610539600052fe"
-    awaitReceipt: false
+    awaitReceipt: true
   configVars:
     privateKey: "walletPrivkey"
 
