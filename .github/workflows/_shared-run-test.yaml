@@ -253,7 +253,6 @@ jobs:
               fi
             fi
 
-            echo "    supernode: true" >> ./temp/participants.yaml
             echo "    count: 1" >> ./temp/participants.yaml
 
             echo "Client $client_idx"
