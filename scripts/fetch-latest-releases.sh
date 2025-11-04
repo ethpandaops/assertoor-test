@@ -3,16 +3,18 @@ set -euo pipefail
 
 # This script fetches the latest release versions for Ethereum clients
 # and outputs them as GitHub Actions environment variables
+#
+# Logic: Gets the most recent release (including pre-releases) based on published date.
 
 echo "Fetching latest release versions for Ethereum clients..."
 
-# Function to get latest GitHub release tag (excluding pre-releases)
+# Function to get latest GitHub release tag (includes pre-releases)
 get_latest_github_release() {
   local repo=$1
   local tag
 
-  # Get latest release (not pre-release)
-  tag=$(gh api "repos/${repo}/releases" --jq '[.[] | select(.prerelease == false)] | .[0].tag_name' 2>/dev/null || echo "")
+  # Get the latest release (including pre-releases)
+  tag=$(gh api "repos/${repo}/releases" --jq '.[0].tag_name' 2>/dev/null || echo "")
 
   if [ -z "$tag" ]; then
     echo "Warning: Could not fetch release for ${repo}, trying latest tag..." >&2
