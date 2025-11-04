@@ -1,0 +1,177 @@
+name: Run weekly release test
+
+on:
+  workflow_dispatch:
+    inputs:
+      overrideClientPairs:
+        description: 'Override client pairs to run this test with (eg. lighthouse-geth,teku-besu)'
+        default: ""
+        type: string
+      overrideKurtosisConfig:
+        description: 'Override kurtosis config to run this test with (eg. kurtosis-config/default.yaml)'
+        default: ""
+        type: string
+      overrideKurtosisBranch:
+        description: 'Override kurtosis ethereum package branch to run this test with (eg. main)'
+        default: ""
+        type: string
+      overrideAssertoorImage:
+        description: 'Override assertoor image to use (eg. ethpandaops/assertoor:latest)'
+        default: "ethpandaops/assertoor:master"
+        type: string
+      sendNotification:
+        description: 'Send Discord notification on test failure'
+        default: "false"
+        type: string
+  schedule:
+  - cron: '0 0 * * 0'  # Run every Sunday at midnight UTC
+
+concurrency:
+  group: "release-test"
+  cancel-in-progress: false
+
+jobs:
+  generate_client_config:
+    name: "Generate Latest Releases Config"
+    runs-on: ubuntu-latest
+    outputs:
+      config_generated: ${{ steps.generate.outputs.config_generated }}
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+    - name: Fetch Latest Release Versions
+      id: fetch_versions
+      run: |
+        chmod +x scripts/fetch-latest-releases.sh
+        ./scripts/fetch-latest-releases.sh
+
+    - name: Generate clients/latest-releases.yaml from template
+      id: generate
+      run: |
+        echo "Substituting versions into template..."
+        envsubst < clients/latest-releases.template.yaml > clients/latest-releases.yaml
+
+        echo "Generated clients/latest-releases.yaml:"
+        cat clients/latest-releases.yaml
+
+        echo "config_generated=true" >> $GITHUB_OUTPUT
+
+    - name: Upload generated config
+      uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+      with:
+        name: latest-releases-config
+        path: clients/latest-releases.yaml
+        retention-days: 7
+
+  get_tests:
+    name: "Load Tests"
+    needs: generate_client_config
+    runs-on: ubuntu-latest
+    outputs:
+      test_configs: ${{ steps.tests.outputs.test_configs }}
+      kurtosis_versions: ${{ steps.tests.outputs.kurtosis_versions }}
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+    - name: Download generated config
+      uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+      with:
+        name: latest-releases-config
+        path: clients/
+
+    - name: "Load test configurations from tests.yaml"
+      id: tests
+      shell: bash
+      run: |
+        tests_file="tests.yaml"
+        override_pairs="${{ inputs.overrideClientPairs }}"
+        override_kurtosis_config="${{ inputs.overrideKurtosisConfig }}"
+        override_kurtosis_branch="${{ inputs.overrideKurtosisBranch }}"
+
+        # Filter for tests that use weekly-latest-releases client config
+        test_configs="$(cat $tests_file | yq -o json | jq '.tests' | jq -c 'map(select(.id == "weekly-latest-releases"))')"
+
+        # Apply overrides if provided
+        if ! [ -z "$override_pairs" ]; then
+          test_configs="$(echo "$test_configs" | jq -c "map(.clientPairs = [\"$override_pairs\"])")"
+        fi
+
+        if ! [ -z "$override_kurtosis_config" ]; then
+          test_configs="$(echo "$test_configs" | jq -c "map(.kurtosis = \"$override_kurtosis_config\")")"
+        fi
+
+        if ! [ -z "$override_kurtosis_branch" ]; then
+          test_configs="$(echo "$test_configs" | jq -c "map(.kurtosis_branch = \"$override_kurtosis_branch\")")"
+        fi
+
+        kurtosis_versions="$(echo "$test_configs" | jq -c "[.[] | select(.backend == \"docker\") | .kurtosis_version // \"latest\"] | unique")"
+        if [ $(echo "$kurtosis_versions" | jq -c ".[] | select(. == \"latest\")" | wc -l) -gt 0 ]; then
+          # get latest kurtosis version
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/kurtosis.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+          latest_kurtosis_version=$(apt show kurtosis-cli | grep Version | awk '{print $2}')
+
+          test_configs=$(echo "$test_configs" | jq -c --arg latest_kurtosis_version "$latest_kurtosis_version" \
+            'map(if ((.kurtosis_version == "latest") or (.kurtosis_version == null)) and .backend == "docker" then .kurtosis_version = $latest_kurtosis_version else . end)')
+          kurtosis_versions=$(echo "$kurtosis_versions" | jq -c ". + [\"$latest_kurtosis_version\"] | [.[] | select(. != \"latest\")] | unique")
+        fi
+
+        echo "test_configs<<EOF" >> $GITHUB_OUTPUT
+        echo "$test_configs" >> $GITHUB_OUTPUT
+        echo "$(echo "$test_configs" | jq)"
+        echo "EOF" >> $GITHUB_OUTPUT
+
+        echo "kurtosis_versions<<EOF" >> $GITHUB_OUTPUT
+        echo "$kurtosis_versions" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+  prepare_cache:
+    needs: get_tests
+    name: "Warmup docker cache"
+    runs-on: ubuntu-latest
+    if: ${{ needs.get_tests.outputs.kurtosis_versions != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJson(needs.get_tests.outputs.kurtosis_versions) }}
+    steps:
+      - name: Warmup kurtosis docker cache (${{ matrix.version }})
+        continue-on-error: true
+        id: cache
+        uses: ethpandaops/kurtosis-cache-github-action@v1 # v1
+        with:
+          kurtosis_version: ${{ matrix.version }}
+          warmup_cache: true
+          warmup_only: true
+          cache_prefix: "kurtosis-docker"
+          s3_access_key: ${{ secrets.S3CACHE_ACCESS_KEY }}
+          s3_secret_key: ${{ secrets.S3CACHE_ACCESS_SECRET }}
+          s3_bucket: ${{ vars.S3CACHE_BUCKET }}
+          s3_endpoint: ${{ vars.S3CACHE_ENDPOINT }}
+
+  run_tests:
+    needs: [get_tests, prepare_cache]
+    if: ${{ !cancelled() && needs.get_tests.outputs.test_configs != '[]' }}
+    uses: ./.github/workflows/_shared-run.yaml
+    name: "${{ matrix.config.name }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ${{ fromJson(needs.get_tests.outputs.test_configs) }}
+    with:
+      config: ${{ toJSON(matrix.config) }}
+      send_notification: ${{ inputs.sendNotification || 'true' }}
+      use_chatgpt: '{"url": "${{ vars.CHATGPT_URL }}", "model": "${{ vars.CHATGPT_MODEL }}", "extra_cfg": ${{ vars.CHATGPT_EXTRA_CFG }}}'
+      s3_bucket: ${{ vars.S3CACHE_BUCKET }}
+      s3_endpoint: ${{ vars.S3CACHE_ENDPOINT }}
+      assertoor_image: ${{ inputs.overrideAssertoorImage || 'ethpandaops/assertoor:master' }}
+    secrets:
+      RANCHER_URL: ${{ secrets.RANCHER_URL }}
+      RANCHER_TOKEN: ${{ secrets.RANCHER_TOKEN }}
+      DISCORD_HOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      S3_ACCESS_KEY: ${{ secrets.S3CACHE_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3CACHE_ACCESS_SECRET }}
