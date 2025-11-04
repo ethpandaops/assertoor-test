@@ -43,6 +43,48 @@ tests:
         useExistingValidators: true
         validatorStartIndex: 680
 
+# Weekly test with dynamically fetched latest releases
+- id: "weekly-latest-releases"
+  schedule: false
+  name: "Test latest GitHub releases (weekly)"
+  clients: clients/latest-releases.yaml
+  kurtosis: kurtosis-config/default.yaml
+  kurtosis_version: latest
+  kurtosis_branch: "main"
+  worker: [self-hosted-ghr-size-l-x64]
+  backend: docker
+  clientPairs:
+    # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
+    # EL: [geth,besu,reth,erigon,nethermind]
+    - lighthouse-reth,lighthouse-besu,grandine-nethermind
+    - prysm-reth,lighthouse-erigon,teku-besu
+    - prysm-besu,nimbus-nethermind,lodestar-besu
+    - lodestar-geth,nimbus-besu,prysm-erigon
+    - lighthouse-geth,nimbus-reth,grandine-besu
+    - prysm-geth,prysm-nethermind,lodestar-reth
+    - lighthouse-nethermind,nimbus-erigon,teku-geth
+    - lodestar-erigon,teku-nethermind,grandine-reth
+    - grandine-geth,teku-erigon,lodestar-nethermind
+    - teku-reth,nimbus-geth,grandine-erigon
+  assertoorTests:
+    - assertoor-tests/stability-check.yaml
+    - assertoor-tests/block-proposal-check.yaml
+    - assertoor-tests/eoa-transactions-test.yaml
+    - assertoor-tests/all-opcodes-test.yaml
+    - assertoor-tests/validator-withdrawal-test.yaml
+    - assertoor-tests/validator-exit-test.yaml
+    #- assertoor-tests/validator-slashing-test.yaml
+    - assertoor-tests/dencun-opcodes-test.yaml
+    - assertoor-tests/blob-transactions-test.yaml
+    - file: https://raw.githubusercontent.com/ethpandaops/assertoor/master/playbooks/pectra-dev/eip7002-all.yaml
+      config:
+        useExistingValidators: true
+        validatorStartIndex: 650
+    - file: https://raw.githubusercontent.com/ethpandaops/assertoor/master/playbooks/pectra-dev/eip7251-all.yaml
+      config:
+        useExistingValidators: true
+        validatorStartIndex: 680
+
 # Check validator client combinations
 - id: "vc-compatibility"
   schedule: true

@@ -1,0 +1,29 @@
+
+consensus: # CL Clients
+  teku:
+    image: "consensys/teku:${TEKU_VERSION}"
+  prysm:
+    image: "offchainlabs/prysm-beacon-chain:${PRYSM_VERSION}"
+    vc_image: "offchainlabs/prysm-validator:${PRYSM_VERSION}"
+  lighthouse:
+    image: "sigp/lighthouse:${LIGHTHOUSE_VERSION}"
+  nimbus:
+    image: "statusim/nimbus-eth2:${NIMBUS_VERSION}"
+    vc_image: "statusim/nimbus-validator-client:${NIMBUS_VERSION}"
+  lodestar:
+    image: "chainsafe/lodestar:${LODESTAR_VERSION}"
+  grandine:
+    image: "sifrai/grandine:${GRANDINE_VERSION}"
+
+execution: # EL Clients
+  geth:
+    image: "ethereum/client-go:${GETH_VERSION}"
+  nethermind:
+    image: "nethermind/nethermind:${NETHERMIND_VERSION}"
+  erigon:
+    image: "erigontech/erigon:${ERIGON_VERSION}"
+  besu:
+    image: "hyperledger/besu:${BESU_VERSION}"
+  reth:
+    image: "ghcr.io/paradigmxyz/reth:${RETH_VERSION}"
+

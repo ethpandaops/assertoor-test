@@ -1,1 +1,5 @@
 temp/
+
+# Generated client configuration (dynamically created by workflow)
+clients/latest-releases.yaml
+CLAUDE.md
