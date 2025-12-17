@@ -6,12 +6,14 @@ docker_cache_params:
   github_prefix: "/gh/"
   google_prefix: "/gcr/"
 network_params:
+  fulu_fork_epoch: 1
   genesis_delay: 120
   min_validator_withdrawability_delay: 1
   shard_committee_period: 1
   num_validator_keys_per_node: 250
   churn_limit_quotient: 16
 additional_services:
+  - bootnodoor
   - assertoor
 snooper_enabled: true
 disable_peer_scoring: true

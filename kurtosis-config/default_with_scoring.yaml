@@ -11,6 +11,7 @@ network_params:
   num_validator_keys_per_node: 250
   churn_limit_quotient: 16
 additional_services:
+  - bootnodoor
   - assertoor
 snooper_enabled: true
 assertoor_params:
