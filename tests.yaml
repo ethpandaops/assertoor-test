@@ -9,7 +9,7 @@ tests:
   kurtosis: kurtosis-config/default.yaml
   kurtosis_version: latest
   kurtosis_branch: "main"
-  worker: [self-hosted-ghr-size-l-x64]
+  worker: [ubuntu-latest]
   backend: docker
   clientPairs:
     # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
