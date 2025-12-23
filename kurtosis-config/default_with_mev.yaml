@@ -13,7 +13,7 @@ network_params:
 additional_services:
   - bootnodoor
   - assertoor
-snooper_enabled: true
+snooper_enabled: false  # Disabled due to dns_name bug in ethereum-package PR #1208
 disable_peer_scoring: true
 mev_type: mev-rs
 assertoor_params:
