@@ -385,7 +385,7 @@ jobs:
         )
 
         chatgpt_url="https://api.openai.com/v1/chat/completions"
-        chatgpt_model="gpt-4-turbo-preview"
+        chatgpt_model="gpt-5.2-chat-latest"
         chatgpt_extra_cfg="{}"
 
         if [ "$chatgpt_config" != "true" ]; then
@@ -514,7 +514,7 @@ jobs:
         query_json=$(
         cat <<"EOF" | envsubst | jq -c
         {
-          "model": "anthropic/claude-sonnet-4.5",
+          "model": "anthropic/claude-sonnet-4-6",
           "messages": [
             {
               "role": "user",
