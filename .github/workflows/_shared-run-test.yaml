@@ -505,7 +505,7 @@ jobs:
         path: "${{ steps.enclave_dump.outputs.dump_dir }}"
 
     - name: Upload Claude Code output artifact
-      if: ${{ steps.claude_code.outputs.summary != '' }}
+      if: ${{ always() && steps.claude_code.outcome != 'skipped' }}
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       with:
         name: "claude-code-output-${{ github.run_id }}-${{ inputs.id }}"
