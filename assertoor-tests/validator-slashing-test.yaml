@@ -2,9 +2,8 @@ id: validator-slashing-test
 name: "Validator Slashing Test"
 timeout: 1h
 config:
-  #walletPrivkey: ""
   validatorMnemonic: "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
-  #validatorPairNames: []
+  validatorPairNames: []
 tasks:
 - name: check_clients_are_healthy
   title: "Check if at least one client is ready"
@@ -84,6 +83,7 @@ tasks:
                 indexCount: 100
               configVars:
                 mnemonic: "validatorMnemonic"
+                clientPattern: "clientPairName"
             foregroundTask:
               name: check_consensus_block_proposals
               title: "Wait for block proposal with attestation slashings"
