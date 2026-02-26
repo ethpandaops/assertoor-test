@@ -371,6 +371,8 @@ jobs:
           exit 0
         fi
         curl -fsSL https://claude.ai/install.sh | bash
+        export PATH="$HOME/.local/bin:$PATH"
+        claude --version
       env:
         OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
@@ -380,6 +382,7 @@ jobs:
       timeout-minutes: 15
       shell: bash
       run: |
+        export PATH="$HOME/.local/bin:$PATH"
         if [ -z "$OPENROUTER_API_KEY" ]; then
           echo "OpenRouter API key not available, skipping Claude Code analysis"
           exit 0
