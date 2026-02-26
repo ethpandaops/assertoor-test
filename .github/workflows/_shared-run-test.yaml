@@ -61,7 +61,7 @@ on:
         default: "false"
       use_chatgpt:
         type: string
-        description: "Use ChatGPT to summarize error (default: false)."
+        description: "Use AI (Claude Code via OpenRouter) to debug and analyze test failures (default: false)."
         default: "false"
       s3_bucket:
         type: string
@@ -362,11 +362,29 @@ jobs:
 
         kurtosis enclave dump $enclave_name
 
-    - name: Generate failure summary via ChatGPT (on failure)
+    - name: Install Claude Code
       if: ${{ steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt != 'false' }}
-      id: chatgpt
       shell: bash
       run: |
+        if [ -z "$OPENROUTER_API_KEY" ]; then
+          echo "OpenRouter API key not available, skipping Claude Code setup"
+          exit 0
+        fi
+        npm install -g @anthropic-ai/claude-code
+      env:
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+    - name: Debug failure with Claude Code
+      if: ${{ steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt != 'false' }}
+      id: claude_code
+      timeout-minutes: 15
+      shell: bash
+      run: |
+        if [ -z "$OPENROUTER_API_KEY" ]; then
+          echo "OpenRouter API key not available, skipping Claude Code analysis"
+          exit 0
+        fi
+
         test_status=$(
         cat <<"EOF"
         ${{ steps.test_result.outputs.test_overview }}
@@ -378,175 +396,102 @@ jobs:
         EOF
         )
 
-        chatgpt_config=$(
-        cat <<"EOF"
-        ${{ inputs.use_chatgpt }}
-        EOF
-        )
+        enclave_name="assertoor-${{ github.run_id }}-${{ inputs.id }}"
 
-        chatgpt_url="https://api.openai.com/v1/chat/completions"
-        chatgpt_model="gpt-5.2-chat-latest"
-        chatgpt_extra_cfg="{}"
+        # Build the prompt
+        cat > ./temp/claude_prompt.md << 'PROMPTEOF'
+        You are debugging a failed Ethereum devnet test. The testnet was deployed via Kurtosis and is still running with Docker containers that you can inspect.
 
-        if [ "$chatgpt_config" != "true" ]; then
-          chatgpt_url=$(echo "$chatgpt_config" | jq -r ".url // \"$chatgpt_url\"")
-          chatgpt_model=$(echo "$chatgpt_config" | jq -r ".model // \"$chatgpt_model\"")
-          chatgpt_extra_cfg=$(echo "$chatgpt_config" | jq -c ".extra_cfg // {}")
-        fi
+        ## Available Commands
+        - `kurtosis enclave inspect ENCLAVE_PLACEHOLDER` - List all services in the enclave
+        - `kurtosis service logs ENCLAVE_PLACEHOLDER <service_name> --all` - Get full logs for a service
+        - `docker ps` - List all running containers
+        - `docker logs <container_id>` - Get container logs
 
-        touch ./temp/chatgpt_query.txt
-        echo "You will receive the test status & the last 200 lines of logs from the ethereum testnet testing tool assertoor." >> ./temp/chatgpt_query.txt
-        echo "The status & logs you get are from failed tests. Please find the error, which clients caused it and try summarizing what went wrong for a first technical insight." >> ./temp/chatgpt_query.txt
-        echo "Assume that assertoor and the test are working fine, so it is probably one or multiple clients causing problems." >> ./temp/chatgpt_query.txt
-        echo "Your summary should not exceed 500 characters. Use easy language with technical details like client names. Avoid listing block numbers or timestamps." >> ./temp/chatgpt_query.txt
-        echo "" >> ./temp/chatgpt_query.txt
+        ## Instructions
+        1. Start by inspecting the enclave to see all running services
+        2. Based on the test failure details below, identify which client services are likely causing issues
+        3. Fetch and analyze logs from the suspect services (focus on errors, warnings, panics)
+        4. Look for connection failures, consensus issues, or other anomalies
+        5. Correlate findings across multiple services if needed
 
-        echo "Client Pairs: (Format: <execution layer client>-<consensus layer client>[-<validator client>], validator client may be left out)" >> ./temp/chatgpt_query.txt
-        cat ./temp/clients_summary.txt >> ./temp/chatgpt_query.txt
-        echo "" >> ./temp/chatgpt_query.txt
+        After your investigation, write your final summary to the file `SUMMARY_PATH_PLACEHOLDER`.
+        The summary should be a concise technical analysis (under 2000 characters) covering:
+        - Which client(s) are failing and the specific errors found
+        - Root cause of the test failure
+        - Key log excerpts that demonstrate the issue
+        - Suggested next steps for resolution
 
-        echo "$test_status" >> ./temp/chatgpt_query.txt
-        echo "" >> ./temp/chatgpt_query.txt
-        echo "Failed Test Task Status:" >> ./temp/chatgpt_query.txt
-        echo "$failed_test_status" >> ./temp/chatgpt_query.txt
-        echo "" >> ./temp/chatgpt_query.txt
+        Assume assertoor (the test framework) is working correctly if there are no obvious panics - focus on ethereum client issues.
+        PROMPTEOF
 
-        tempdir="${{ steps.enclave_dump.outputs.dump_dir }}"
-        tail -n 200 $tempdir/assertoor-*/assertoor--*/output.log >> ./temp/chatgpt_query.txt
+        # Replace placeholders
+        summary_path="$(pwd)/temp/claude_code_summary.txt"
+        sed -i "s|ENCLAVE_PLACEHOLDER|$enclave_name|g" ./temp/claude_prompt.md
+        sed -i "s|SUMMARY_PATH_PLACEHOLDER|$summary_path|g" ./temp/claude_prompt.md
 
-        query_text="$(cat ./temp/chatgpt_query.txt)"
-        cp ./temp/chatgpt_query.txt $tempdir/chatgpt_query.txt
-
-        export QUERY_TEXT=$(echo "$query_text" | jq -R -s '.')
-        export CHATGPT_MODEL=$chatgpt_model
-        query_json=$(
-        cat <<"EOF" | envsubst | jq -c
+        # Append dynamic context
         {
-          "model": "$CHATGPT_MODEL",
-          "messages": [
-            {
-              "role": "user",
-              "content": $QUERY_TEXT
-            }
-          ]
-        }
-        EOF
-        )
+          echo ""
+          echo "## Environment"
+          echo "- **Test ID:** ${{ inputs.id }}"
+          echo "- **Test Name:** ${{ inputs.name }}"
+          echo "- **Kurtosis Enclave:** $enclave_name"
+          echo ""
+          echo "## Client Pairs"
+          echo "(Format: execution-consensus[-validator])"
+          cat ./temp/clients_summary.txt
+          echo ""
+          echo "## Test Overview"
+          echo "$test_status"
+          echo ""
+          echo "## Failed Test Details"
+          echo "$failed_test_status"
+        } >> ./temp/claude_prompt.md
 
-        query_json=$(echo "$query_json" | jq -c ".+=${chatgpt_extra_cfg}")
+        echo "=== Claude Code Prompt ==="
+        cat ./temp/claude_prompt.md
+        echo "=========================="
 
-        result=$(curl $chatgpt_url \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer $CHATGPT_KEY" \
-          -d "$query_json"
-        )
+        # Run Claude Code with OpenRouter
+        # Full output (including intermediate reasoning) goes to claude_code_output.txt
+        # Claude is instructed to write its final summary to claude_code_summary.txt
+        cat ./temp/claude_prompt.md | claude \
+          -p \
+          --dangerously-skip-permissions \
+          --max-turns 30 \
+          --output-format text \
+          > ./temp/claude_code_output.txt 2>&1 || true
 
-        echo "ChatGPT Summary:"
-        summary="$(echo $result | jq -r ".choices[0].message.content")"
-        if [ "$summary" == "null" ]; then
-          echo "ChatGPT failed to generate a summary"
-          echo $result | jq
+        echo "=== Claude Code Full Output ==="
+        cat ./temp/claude_code_output.txt
+        echo "================================"
+
+        # Read the summary file that Claude wrote
+        if [ -f ./temp/claude_code_summary.txt ]; then
+          echo "Claude Code Summary:"
+          cat ./temp/claude_code_summary.txt
         else
-          echo "$summary" > ./temp/chatgpt_summary.txt
+          echo "Claude Code did not write a summary file, falling back to output"
+          cp ./temp/claude_code_output.txt ./temp/claude_code_summary.txt
         fi
 
+        # Copy to enclave dump if available
+        if [ -n "${{ steps.enclave_dump.outputs.dump_dir }}" ]; then
+          cp ./temp/claude_prompt.md "${{ steps.enclave_dump.outputs.dump_dir }}/claude_prompt.md" || true
+          cp ./temp/claude_code_output.txt "${{ steps.enclave_dump.outputs.dump_dir }}/claude_code_output.txt" || true
+          cp ./temp/claude_code_summary.txt "${{ steps.enclave_dump.outputs.dump_dir }}/claude_code_summary.txt" || true
+        fi
+
+        # Save summary to step output
         echo "summary<<EOF" >> $GITHUB_OUTPUT
-        echo $result | jq -r ".choices[0].message.content" >> $GITHUB_OUTPUT
+        cat ./temp/claude_code_summary.txt >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
       env:
-        CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
-        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-
-    - name: Check OpenRouter API key availability
-      if: ${{ steps.test_result.outputs.result == 'failure' }}
-      id: check_openrouter
-      shell: bash
-      run: |
-        if [ ! -z "$OPENROUTER_API_KEY" ]; then
-          echo "has_key=true" >> $GITHUB_OUTPUT
-        else
-          echo "has_key=false" >> $GITHUB_OUTPUT
-        fi
-      env:
-        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-
-    - name: Generate failure summary via OpenRouter/Gemini (on failure)
-      if: ${{ steps.test_result.outputs.result == 'failure' && steps.check_openrouter.outputs.has_key == 'true' }}
-      id: openrouter
-      shell: bash
-      run: |
-        test_status=$(
-        cat <<"EOF"
-        ${{ steps.test_result.outputs.test_overview }}
-        EOF
-        )
-        failed_test_status=$(
-        cat <<"EOF"
-        ${{ steps.test_result.outputs.failed_test_details }}
-        EOF
-        )
-
-        touch ./temp/openrouter_query.txt
-        echo "You will receive the test status & the last 200 lines of logs from the ethereum testnet testing tool assertoor." >> ./temp/openrouter_query.txt
-        echo "The status & logs you get are from failed tests. Please find the error, which clients caused it and try summarizing what went wrong for a first technical insight." >> ./temp/openrouter_query.txt
-        echo "Assume that assertoor and the test are working fine, so it is probably one or multiple clients causing problems." >> ./temp/openrouter_query.txt
-        echo "Your summary should not exceed 500 characters. Use easy language with technical details like client names. Avoid listing block numbers or timestamps." >> ./temp/openrouter_query.txt
-        echo "" >> ./temp/openrouter_query.txt
-
-        echo "Client Pairs: (Format: <execution layer client>-<consensus layer client>[-<validator client>], validator client may be left out)" >> ./temp/openrouter_query.txt
-        cat ./temp/clients_summary.txt >> ./temp/openrouter_query.txt
-        echo "" >> ./temp/openrouter_query.txt
-
-        echo "$test_status" >> ./temp/openrouter_query.txt
-        echo "" >> ./temp/openrouter_query.txt
-        echo "Failed Test Task Status:" >> ./temp/openrouter_query.txt
-        echo "$failed_test_status" >> ./temp/openrouter_query.txt
-        echo "" >> ./temp/openrouter_query.txt
-
-        tempdir="${{ steps.enclave_dump.outputs.dump_dir }}"
-        tail -n 200 $tempdir/assertoor-*/assertoor--*/output.log >> ./temp/openrouter_query.txt
-
-        query_text="$(cat ./temp/openrouter_query.txt)"
-        cp ./temp/openrouter_query.txt $tempdir/openrouter_query.txt
-
-        export QUERY_TEXT=$(echo "$query_text" | jq -R -s '.')
-        query_json=$(
-        cat <<"EOF" | envsubst | jq -c
-        {
-          "model": "anthropic/claude-sonnet-4-6",
-          "messages": [
-            {
-              "role": "user",
-              "content": $QUERY_TEXT
-            }
-          ]
-        }
-        EOF
-        )
-
-        result=$(curl https://openrouter.ai/api/v1/chat/completions \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer $OPENROUTER_API_KEY" \
-          -H "HTTP-Referer: https://github.com/ethpandaops/assertoor-test" \
-          -H "X-Title: Assertoor Test Runner" \
-          -d "$query_json"
-        )
-
-        echo "OpenRouter/Gemini Summary:"
-        summary="$(echo $result | jq -r ".choices[0].message.content")"
-        if [ "$summary" == "null" ]; then
-          echo "OpenRouter/Gemini failed to generate a summary"
-          echo $result | jq
-        else
-          echo "$summary" > ./temp/openrouter_summary.txt
-        fi
-
-        echo "summary<<EOF" >> $GITHUB_OUTPUT
-        echo $result | jq -r ".choices[0].message.content" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-
-      env:
+        ANTHROPIC_BASE_URL: "https://openrouter.ai/api"
+        ANTHROPIC_AUTH_TOKEN: ${{ secrets.OPENROUTER_API_KEY }}
+        ANTHROPIC_API_KEY: ""
         OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
     - name: Upload dump artifact
@@ -555,6 +500,16 @@ jobs:
       with:
         name: "enclave-dump-assertoor-${{ github.run_id }}-${{ inputs.id }}"
         path: "${{ steps.enclave_dump.outputs.dump_dir }}"
+
+    - name: Upload Claude Code output artifact
+      if: ${{ steps.claude_code.outputs.summary != '' }}
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      with:
+        name: "claude-code-output-${{ github.run_id }}-${{ inputs.id }}"
+        path: |
+          ./temp/claude_prompt.md
+          ./temp/claude_code_output.txt
+          ./temp/claude_code_summary.txt
 
     - name: Generate github summary (on failure)
       if: ${{ (failure() || steps.test_result.outputs.result == 'failure') }}
@@ -591,26 +546,15 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
         fi
 
-        chatgpt_summary=$(
+        claude_summary=$(
         cat <<"EOF"
-        ${{ steps.chatgpt.outputs.summary }}
+        ${{ steps.claude_code.outputs.summary }}
         EOF
         )
-        if ! [ -z "$chatgpt_summary" ]; then
+        if ! [ -z "$claude_summary" ]; then
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Summary (ChatGPT)" >> $GITHUB_STEP_SUMMARY
-          echo "$chatgpt_summary" >> $GITHUB_STEP_SUMMARY
-        fi
-
-        openrouter_summary=$(
-        cat <<"EOF"
-        ${{ steps.openrouter.outputs.summary }}
-        EOF
-        )
-        if ! [ -z "$openrouter_summary" ]; then
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Summary (OpenRouter/Gemini)" >> $GITHUB_STEP_SUMMARY
-          echo "$openrouter_summary" >> $GITHUB_STEP_SUMMARY
+          echo "## AI Analysis (Claude Code)" >> $GITHUB_STEP_SUMMARY
+          echo "$claude_summary" >> $GITHUB_STEP_SUMMARY
         fi
 
         echo "" >> $GITHUB_STEP_SUMMARY
@@ -653,24 +597,14 @@ jobs:
           echo '```'  >> ./temp/notification_text.txt
         fi
 
-        chatgpt_summary=$(
+        claude_summary=$(
         cat <<"EOF"
-        ${{ steps.chatgpt.outputs.summary }}
+        ${{ steps.claude_code.outputs.summary }}
         EOF
         )
-        if ! [ -z "$chatgpt_summary" ]; then
-          echo "**Summary: (ChatGPT)**" >> ./temp/notification_text.txt
-          echo "$chatgpt_summary" >> ./temp/notification_text.txt
-        fi
-
-        openrouter_summary=$(
-        cat <<"EOF"
-        ${{ steps.openrouter.outputs.summary }}
-        EOF
-        )
-        if ! [ -z "$openrouter_summary" ]; then
-          echo "**Summary: (OpenRouter/Gemini)**" >> ./temp/notification_text.txt
-          echo "$openrouter_summary" >> ./temp/notification_text.txt
+        if ! [ -z "$claude_summary" ]; then
+          echo "**AI Analysis (Claude Code):**" >> ./temp/notification_text.txt
+          echo "$claude_summary" >> ./temp/notification_text.txt
         fi
 
         echo "Resolve job_id..."
@@ -716,9 +650,9 @@ jobs:
         ${{ steps.test_result.outputs.failed_test_details }}
         EOF
         )
-        chatgpt_summary=$(
+        claude_summary=$(
         cat <<"EOF"
-        ${{ steps.chatgpt.outputs.summary }}
+        ${{ steps.claude_code.outputs.summary }}
         EOF
         )
 
@@ -726,7 +660,7 @@ jobs:
         summary_json=$(echo "$summary_json" | jq -c --arg value "$test_result" '.test_result = $value')
         summary_json=$(echo "$summary_json" | jq -c --arg value "$test_status" '.test_status = $value')
         summary_json=$(echo "$summary_json" | jq -c --arg value "$failed_test_status" '.failed_test_status = $value')
-        summary_json=$(echo "$summary_json" | jq -c --arg value "$chatgpt_summary" '.chatgpt_summary = $value')
+        summary_json=$(echo "$summary_json" | jq -c --arg value "$claude_summary" '.ai_summary = $value')
         summary_json=$(echo "$summary_json" | jq -c --arg value "${{ steps.enclave_dump.outputs.dump_artifact }}" '.enclave_dump_artifact = $value')
         echo "$summary_json" > ./temp/summary.json
 
@@ -738,12 +672,11 @@ jobs:
           echo "Failed Test Task Status:"
           echo "$failed_test_status"
 
-          if ! [ -z "$chatgpt_summary" ]; then
+          if ! [ -z "$claude_summary" ]; then
             echo ""
-            echo "Failure summary (ChatGPT):"
-            echo "$chatgpt_summary"
+            echo "AI Analysis (Claude Code):"
+            echo "$claude_summary"
           fi
-
 
           echo ""
           echo "See 'Await assertoor test result' task or run artifact for detailed logs about this failure!"

@@ -12,7 +12,7 @@ on:
         default: "false"
       use_chatgpt:
         type: string
-        description: "Use ChatGPT to generate a summary of failed tests (default: false)."
+        description: "Use AI (Claude Code via OpenRouter) to debug and analyze test failures (default: false)."
         default: "false"
       s3_bucket:
         type: string

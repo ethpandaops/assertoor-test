@@ -144,7 +144,7 @@ jobs:
     with:
       config: ${{ toJSON(matrix.config) }}
       send_notification: ${{ inputs.sendNotification || 'false' }}
-      use_chatgpt: '{"url": "${{ vars.CHATGPT_URL }}", "model": "${{ vars.CHATGPT_MODEL }}", "extra_cfg": ${{ vars.CHATGPT_EXTRA_CFG }}}'
+      use_chatgpt: "true"
       s3_bucket: ${{ vars.S3CACHE_BUCKET }}
       s3_endpoint: ${{ vars.S3CACHE_ENDPOINT }}
       assertoor_image: ${{ inputs.overrideAssertoorImage || 'ethpandaops/assertoor:master' }}
