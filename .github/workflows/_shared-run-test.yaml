@@ -363,7 +363,7 @@ jobs:
         kurtosis enclave dump $enclave_name
 
     - name: Install Claude Code
-      if: ${{ steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt != 'false' }}
+      if: ${{ (failure() || steps.test_result.outputs.result == 'failure') && inputs.use_chatgpt != 'false' }}
       shell: bash
       run: |
         if [ -z "$OPENROUTER_API_KEY" ]; then
@@ -375,7 +375,7 @@ jobs:
         OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
     - name: Debug failure with Claude Code
-      if: ${{ steps.test_result.outputs.result == 'failure' && inputs.use_chatgpt != 'false' }}
+      if: ${{ (failure() || steps.test_result.outputs.result == 'failure') && inputs.use_chatgpt != 'false' }}
       id: claude_code
       timeout-minutes: 15
       shell: bash
