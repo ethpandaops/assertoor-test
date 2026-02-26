@@ -370,7 +370,7 @@ jobs:
           echo "OpenRouter API key not available, skipping Claude Code setup"
           exit 0
         fi
-        npm install -g @anthropic-ai/claude-code
+        curl -fsSL https://claude.ai/install.sh | bash
       env:
         OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
