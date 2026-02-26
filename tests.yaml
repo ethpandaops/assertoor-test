@@ -9,7 +9,7 @@ tests:
   kurtosis: kurtosis-config/default.yaml
   kurtosis_version: latest
   kurtosis_branch: "main"
-  worker: [ubuntu-latest]
+  worker: [self-hosted-ghr-size-l-x64]
   backend: docker
   clientPairs:
     # CL: [lighthouse,prysm,teku,lodestar,nimbus,grandine]
@@ -50,7 +50,7 @@ tests:
   clients: clients/latest-dev.yaml
   kurtosis: kurtosis-config/default_without_snooper.yaml
   kurtosis_branch: "main"
-  worker: ubuntu-latest
+  worker: [self-hosted-ghr-size-l-x64]
   backend: docker
   skip_notifications: true
   clientPairs:
@@ -73,7 +73,7 @@ tests:
   name: "Test validator client combinations with stable clients"
   clients: clients/latest-stable.yaml
   kurtosis: kurtosis-config/default_without_snooper.yaml
-  worker: ubuntu-latest
+  worker: [self-hosted-ghr-size-l-x64]
   backend: docker
   clientPairs:
     # EL: [geth]
@@ -94,7 +94,7 @@ tests:
   name: "Test validator client combinations with fulu fork"
   clients: clients/latest-dev.yaml
   kurtosis: kurtosis-config/default_fulu_fork.yaml
-  worker: ubuntu-latest
+  worker: [self-hosted-ghr-size-l-x64]
   backend: docker
   clientPairs:
     # EL: [geth]
