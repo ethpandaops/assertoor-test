@@ -5,6 +5,10 @@ on:
   schedule:
   - cron: '0 1 * * *'
 
+permissions:
+  contents: write
+  actions: read
+
 concurrency:
   group: "scheduled-test"
   cancel-in-progress: false
@@ -19,6 +23,14 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+    - name: "Clean up stagger tags from previous runs"
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh api repos/${{ github.repository }}/git/matching-refs/stagger/ --paginate -q '.[].ref' | while read ref; do
+          gh api -X DELETE "repos/${{ github.repository }}/git/${ref#refs/}" || true
+        done
     - name: "Load test configurations from tests.yaml"
       id: tests
       shell: bash
