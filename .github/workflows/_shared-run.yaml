@@ -134,9 +134,12 @@ jobs:
           echo "Notifications: $send_notification"
           echo "send_notification=$send_notification" >> $GITHUB_OUTPUT
         fi
+        stagger_offset="$(echo "$testcfg" | jq -r '.stagger_offset // 0')"
+        echo "Stagger Offset: $stagger_offset"
+
         echo "Client Pairs:"
         echo "$pairs" | yq -P
-        echo "pairs=$(echo "$pairs" | jq -c 'to_entries | map({pairs:.value, index:.key})')" >> $GITHUB_OUTPUT
+        echo "pairs=$(echo "$pairs" | jq -c --argjson offset "$stagger_offset" 'to_entries | map({pairs:.value, index:.key, stagger_delay: ((.key + $offset) * 60)})')" >> $GITHUB_OUTPUT
         echo "pairsidx=$(echo "$pairs" | jq -c 'to_entries | map(.key)')" >> $GITHUB_OUTPUT
         echo "Assertoor Tests:"
         echo "$assertoor_tests" | yq -P
@@ -180,6 +183,7 @@ jobs:
     uses: ./.github/workflows/_shared-run-test.yaml
     with:
       id: "${{ needs.get_test.outputs.id }}-${{ matrix.index }}"
+      stagger_delay: "${{ matrix.stagger_delay }}"
       name: "${{ needs.get_test.outputs.name }}"
       pairs: ${{ matrix.pairs }}
       worker: ${{ needs.get_test.outputs.worker }}

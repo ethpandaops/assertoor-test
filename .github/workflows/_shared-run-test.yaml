@@ -7,6 +7,10 @@ on:
         type: string
         description: "The test identifier."
         required: true
+      stagger_delay:
+        type: string
+        description: "Delay in seconds before starting the test (for staggering parallel job starts)."
+        default: "0"
       name:
         type: string
         description: "The test name."
@@ -108,6 +112,13 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       
+    - name: "Stagger job start"
+      if: ${{ inputs.stagger_delay != '0' && inputs.stagger_delay != '' }}
+      shell: bash
+      run: |
+        echo "Waiting ${{ inputs.stagger_delay }} seconds to stagger job start..."
+        sleep ${{ inputs.stagger_delay }}
+
     - name: "Show Inputs"
       shell: bash
       run: |
