@@ -7,9 +7,9 @@ on:
         type: string
         description: "The test identifier."
         required: true
-      stagger_delay:
+      stagger_seconds:
         type: string
-        description: "Delay in seconds before starting the test (for staggering parallel job starts)."
+        description: "Seconds between staggered job starts. Uses GitHub Actions cache for atomic slot coordination across all parallel jobs (0 to disable)."
         default: "0"
       name:
         type: string
@@ -113,11 +113,86 @@ jobs:
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       
     - name: "Stagger job start"
-      if: ${{ inputs.stagger_delay != '0' && inputs.stagger_delay != '' }}
+      if: ${{ inputs.stagger_seconds != '0' && inputs.stagger_seconds != '' }}
       shell: bash
       run: |
-        echo "Waiting ${{ inputs.stagger_delay }} seconds to stagger job start..."
-        sleep ${{ inputs.stagger_delay }}
+        # Claim a stagger slot using the GitHub Actions cache internal API.
+        # The reserve endpoint is atomic: returns 201 on success, 409 if key exists.
+        # Each job claims the next available slot and sleeps slot * interval seconds.
+
+        STAGGER_INTERVAL="${{ inputs.stagger_seconds }}"
+        CACHE_URL="${ACTIONS_CACHE_URL}_apis/artifactcache"
+        CACHE_KEY_PREFIX="stagger-${{ github.run_id }}"
+        CACHE_VERSION=$(echo -n "stagger-v1" | sha256sum | cut -d' ' -f1)
+
+        if [ -z "$ACTIONS_CACHE_URL" ] || [ -z "$ACTIONS_RUNTIME_TOKEN" ]; then
+          echo "Cache service not available, skipping stagger"
+          exit 0
+        fi
+
+        claim_slot() {
+          local slot=$1
+          local key="${CACHE_KEY_PREFIX}-slot-${slot}"
+
+          local http_code
+          http_code=$(curl -s -o /tmp/cache_reserve.json -w "%{http_code}" \
+            --connect-timeout 5 --max-time 10 \
+            -X POST \
+            -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+            -H "Content-Type: application/json" \
+            "${CACHE_URL}/caches" \
+            -d "{\"key\":\"${key}\",\"version\":\"${CACHE_VERSION}\"}")
+
+          if [ "$http_code" = "201" ]; then
+            # Reserve succeeded - finalize with a minimal upload + commit
+            local cache_id
+            cache_id=$(jq -r '.cacheId' < /tmp/cache_reserve.json)
+
+            printf 'x' > /tmp/stagger_payload
+            curl -s -o /dev/null --connect-timeout 5 --max-time 10 \
+              -X PATCH \
+              -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+              -H "Content-Type: application/octet-stream" \
+              -H "Content-Range: bytes 0-0/*" \
+              "${CACHE_URL}/caches/${cache_id}" \
+              --data-binary @/tmp/stagger_payload
+
+            curl -s -o /dev/null --connect-timeout 5 --max-time 10 \
+              -X POST \
+              -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+              -H "Content-Type: application/json" \
+              "${CACHE_URL}/caches/${cache_id}" \
+              -d '{"size":1}'
+
+            return 0
+          fi
+          return 1
+        }
+
+        # Claim the next available slot
+        slot=0
+        claimed=false
+        while [ $slot -lt 200 ]; do
+          if claim_slot $slot; then
+            claimed=true
+            break
+          fi
+          slot=$((slot + 1))
+        done
+
+        if [ "$claimed" != "true" ]; then
+          echo "Warning: Could not claim stagger slot after 200 attempts, proceeding without delay"
+          exit 0
+        fi
+
+        delay=$((slot * STAGGER_INTERVAL))
+        echo "Claimed stagger slot $slot (delay: ${delay}s / $(( delay / 60 ))m $(( delay % 60 ))s)"
+
+        if [ $delay -gt 0 ]; then
+          sleep $delay
+        fi
+
+        echo "Stagger complete, proceeding with test"
 
     - name: "Show Inputs"
       shell: bash

@@ -38,15 +38,6 @@ jobs:
           kurtosis_versions=$(echo "$kurtosis_versions" | jq -c ". + [\"$latest_kurtosis_version\"] | [.[] | select(. != \"latest\")] | unique")
         fi
 
-        # Add stagger_offset to each test config to stagger job starts across all tests
-        # Each test's offset = sum of clientPairs counts from all preceding tests
-        test_configs=$(echo "$test_configs" | jq -c '
-          reduce range(length) as $i (
-            .;
-            .[$i].stagger_offset = ([.[:$i][] | .clientPairs | length] | add // 0)
-          )
-        ')
-
         echo "test_configs<<EOF" >> $GITHUB_OUTPUT
         echo "$test_configs" >> $GITHUB_OUTPUT
         echo "$(echo "$test_configs" | jq)"
@@ -91,6 +82,7 @@ jobs:
         config: ${{ fromJson(needs.get_tests.outputs.test_configs) }}
     with:
       config: ${{ toJSON(matrix.config) }}
+      stagger_seconds: "60"
       send_notification: "true"
       use_chatgpt: "true"
       s3_bucket: ${{ vars.S3CACHE_BUCKET }}
