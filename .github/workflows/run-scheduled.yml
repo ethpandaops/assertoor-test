@@ -41,7 +41,7 @@ jobs:
         kurtosis_versions="$(echo "$test_configs" | jq -c "[.[] | select(.backend == \"docker\") | .kurtosis_version // \"latest\"] | unique")"
         if [ $(echo "$kurtosis_versions" | jq -c ".[] | select(. == \"latest\")" | wc -l) -gt 0 ]; then
           # get latest kurtosis version
-          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          echo "deb [trusted=yes] https://sdk.kurtosis.com/kurtosis-cli-release-artifacts/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
           sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/kurtosis.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
           latest_kurtosis_version=$(apt show kurtosis-cli | grep Version | awk '{print $2}')
 
