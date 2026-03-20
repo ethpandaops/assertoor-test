@@ -29,7 +29,7 @@ jobs:
         GH_TOKEN: ${{ github.token }}
       run: |
         gh api repos/${{ github.repository }}/git/matching-refs/stagger/ --paginate -q '.[].ref' | while read ref; do
-          gh api -X DELETE "repos/${{ github.repository }}/git/${ref#refs/}" || true
+          gh api -X DELETE "repos/${{ github.repository }}/git/refs/${ref#refs/}" || true
         done
     - name: "Load test configurations from tests.yaml"
       id: tests
@@ -72,7 +72,7 @@ jobs:
       - name: Warmup kurtosis docker cache (${{ matrix.version }})
         continue-on-error: true
         id: cache
-        uses: ethpandaops/kurtosis-cache-github-action@v1 # v1
+        uses: ethpandaops/kurtosis-cache-github-action@c3e93d993cdb7800c4cb945b65224d3470ab72da # v1.0.1
         with:
           kurtosis_version: ${{ matrix.version }}
           warmup_cache: true
