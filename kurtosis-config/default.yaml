@@ -16,6 +16,8 @@ additional_services:
   - assertoor
 snooper_enabled: false  # Disabled due to dns_name bug in ethereum-package PR #1208
 disable_peer_scoring: true
+ethereum_genesis_generator_params:
+  image: "ethpandaops/ethereum-genesis-generator:pk910-restore-teku-compatibility"
 assertoor_params:
   image: "ethpandaops/assertoor:master"
   run_stability_check: false
