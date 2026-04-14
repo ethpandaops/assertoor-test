@@ -381,7 +381,7 @@ jobs:
       if: ${{ inputs.backend == 'docker' }}
       continue-on-error: true
       id: cache
-      uses: ethpandaops/kurtosis-cache-github-action@c3e93d993cdb7800c4cb945b65224d3470ab72da # v1.0.1
+      uses: ethpandaops/kurtosis-cache-github-action@b3a3a41c254f630a921605b808f1dc66919c69da # v1.0.2
       with:
         kurtosis_version: ${{ inputs.kurtosis_version }}
         warmup_cache: false
