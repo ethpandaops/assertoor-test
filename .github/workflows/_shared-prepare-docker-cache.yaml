@@ -44,7 +44,7 @@ jobs:
       if: ${{ steps.check_cache.outputs.exists == 'false' }}
       continue-on-error: true
       id: testnet
-      uses: ethpandaops/kurtosis-assertoor-github-action@f64942cbc780df731a731ea9f45765b161d2c8df # v1.0.1
+      uses: ethpandaops/kurtosis-assertoor-github-action@4e8410c0ace3a36630377e4ea8ee69d1c7dc0ab3 # PR#11
       with:
         kurtosis_extra_args: "--image-download always --non-blocking-tasks --verbosity DETAILED"
         kurtosis_backend: docker
