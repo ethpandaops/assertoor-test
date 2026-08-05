@@ -24,7 +24,8 @@ execution: # EL Clients
   erigon:
     image: "erigontech/erigon:latest"
   besu:
-    image: "hyperledger/besu:latest"
+    #image: "hyperledger/besu:latest"
+    image: "ethpandaops/besu:main"
   reth:
     image: "ghcr.io/paradigmxyz/reth"
 
