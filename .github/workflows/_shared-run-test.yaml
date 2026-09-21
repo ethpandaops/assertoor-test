@@ -93,8 +93,8 @@ on:
       CHATGPT_KEY:
         description: 'ChatGPT Key'
         required: false
-      OPENROUTER_API_KEY:
-        description: 'OpenRouter API Key'
+      LITELLM_API_KEY:
+        description: 'LiteLLM API key (ai.starflinger.eu)'
         required: false
       S3_ACCESS_KEY:
         description: 'S3 Access Key'
@@ -437,15 +437,15 @@ jobs:
       if: ${{ (failure() || steps.test_result.outputs.result == 'failure') && inputs.use_chatgpt != 'false' }}
       shell: bash
       run: |
-        if [ -z "$OPENROUTER_API_KEY" ]; then
-          echo "OpenRouter API key not available, skipping Claude Code setup"
+        if [ -z "$LITELLM_API_KEY" ]; then
+          echo "LiteLLM API key not available, skipping Claude Code setup"
           exit 0
         fi
         curl -fsSL https://claude.ai/install.sh | bash
         export PATH="$HOME/.local/bin:$PATH"
         claude --version
       env:
-        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        LITELLM_API_KEY: ${{ secrets.LITELLM_API_KEY }}
 
     - name: Debug failure with Claude Code
       if: ${{ (failure() || steps.test_result.outputs.result == 'failure') && inputs.use_chatgpt != 'false' }}
@@ -454,8 +454,8 @@ jobs:
       shell: bash
       run: |
         export PATH="$HOME/.local/bin:$PATH"
-        if [ -z "$OPENROUTER_API_KEY" ]; then
-          echo "OpenRouter API key not available, skipping Claude Code analysis"
+        if [ -z "$LITELLM_API_KEY" ]; then
+          echo "LiteLLM API key not available, skipping Claude Code analysis"
           exit 0
         fi
 
@@ -563,10 +563,11 @@ jobs:
         echo "EOF" >> $GITHUB_OUTPUT
 
       env:
-        ANTHROPIC_BASE_URL: "https://openrouter.ai/api"
-        ANTHROPIC_AUTH_TOKEN: ${{ secrets.OPENROUTER_API_KEY }}
+        ANTHROPIC_BASE_URL: "https://ai.starflinger.eu"
+        ANTHROPIC_MODEL: "starflinger-anthropic"
+        ANTHROPIC_SMALL_FAST_MODEL: "starflinger-anthropic"
+        ANTHROPIC_AUTH_TOKEN: ${{ secrets.LITELLM_API_KEY }}
         ANTHROPIC_API_KEY: ""
-        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
     - name: Upload dump artifact
       if: ${{ steps.enclave_dump.outputs.dump_dir != '' }}
