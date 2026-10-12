@@ -25,6 +25,7 @@ generate_summary() {
     fi
 
     IFS=',' read -ra pairs <<< "$pair_string"
+    row_keys=()
     if [[ "$test_result" == "success" || "$test_result" == "failed" ]]; then
       for pair in "${pairs[@]}"; do
         if [[ "$pair" == */* ]]; then
@@ -41,15 +42,17 @@ generate_summary() {
         seen_bn["$bn"]=1
         seen_vc["$vc"]=1
         result["$bn,$vc"]="✅"
+        row_keys+=("$bn,$vc")
       done
     fi
     
     if [[ "$test_result" == "failed" ]]; then
       # Parse failed client pairs from failed_test_status
       if [[ -f "$summary_path" ]]; then
-        failed_lines=$(jq -r '.failed_test_status' "$summary_path" | grep 'check_consensus_block_proposals' | grep 'failed')
+        failed_lines=$(jq -r '.failed_test_status' "$summary_path" | grep 'check_consensus_block_proposals' | grep 'failed' || true)
 
         while read -r line; do
+          [[ -z "$line" ]] && continue
           # Extract from "Wait for block proposal from X-<el>-<bn>[-<vc>]"
           client_part=$(echo "$line" | grep -oE '[0-9]+-[a-z0-9-]+-[a-z0-9-]+$' | cut -d'-' -f2-)
 
@@ -65,6 +68,13 @@ generate_summary() {
           seen_vc["$vc"]=1
           result["$bn,$vc"]="❌"
         done <<< "$failed_lines"
+      fi
+
+      stability_line=$(jq -r '.test_status' "$summary_path" | grep 'stability-check' || true)
+      if [[ -n "$stability_line" && "$stability_line" != *success* ]]; then
+        for key in "${row_keys[@]}"; do
+          if [[ "${result[$key]}" == "✅" ]]; then result["$key"]="⚠️"; fi
+        done
       fi
     fi
   done < <(echo "$pairs" | jq -c '.[]')
@@ -106,6 +116,7 @@ generate_summary() {
     echo "$header"
     echo "$separator"
     echo "$rows"
+    echo "⚠️ = proposed blocks, but the stability check (finality, attestations, reorgs) failed for that BN's run"
   } >> "$GITHUB_STEP_SUMMARY"
 
 }

@@ -65,6 +65,7 @@ tests:
     - grandine/lighthouse-geth,grandine/prysm-geth,grandine/teku-geth,grandine/lodestar-geth,grandine/nimbus-geth
   assertoorTests:
     - assertoor-tests/block-proposal-check.yaml
+    - assertoor-tests/stability-check.yaml
   summaryScript: "summary-scripts/vc-compatibility.sh"
 
 # Check validator client combinations with stable clients
